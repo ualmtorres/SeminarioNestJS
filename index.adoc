@@ -39,10 +39,7 @@ COLOCA A CONTINUACION LOS OBJETIVOS
 
 [TIP]
 ====
-Disponibles los repositorios usados en este seminario:
-
-* [Acceso a los ejemplos]
-
+Disponible el https://github.com/ualmtorres/tutorial-nest-js[repositorio] usado en este tutorial.
 ====
 
 // Entrar en modo numerado de apartados
@@ -762,7 +759,126 @@ export class BooksService {
 
 Este tipado permite manipular de forma segura las propiedades de los libros ayudando a detectarse errores derivados de asignación de valores a tipos incorrectos.
 
-## Documentación con Swagger (OpenAPI)
+## Finalización del mockeado
+
+Hasta ahora, sólo estaban mockeadas con objetos del dominio las operaciones de creación y modificación. Las oepraciones de consulta y eliminación sólo devolvían un texto indicando que se había alcanzado el endpoint. En este apartado, haremos que todas las operaciones trabajen con datos del dominio aunque todavía será algo preliminar, ya que serán sólo un par de libros almacenados en el propio código y ninguna operación tratará con datos reales (p.e. la búsqueda de un libro siempre devolverá el mismo libro, la actualización/eliminación siempre informará que se ha modificado/eliminado el mismo libro). No obstante, esto permite que el controlador ya trate con los tipos de datos que devolverán los servicios cuando implementen su funcionalidad real.
+
+### El servicio
+
+[source, ts]
+----
+import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
+import { BookDto } from './book.dto'; <1>
+import { Book } from './book.interface'; <2>
+
+@Injectable()
+export class BooksService {
+  books: Book[] = [ <3>
+    {
+      id: 1,
+      title: 'Una historia de España',
+      genre: 'Historia',
+      description:
+        'Un relato ameno, personal, a ratos irónico, pero siempre único, de nuestra accidentada historia a través de los siglos. Una obra concebida por el autor para, en palabras suyas, «divertirme, releer y disfrutar; un pretexto para mirar atrás desde los tiempos remotos hasta el presente, reflexionar un poco sobre ello y contarlo por escrito de una manera poco ortodoxa.',
+      author: 'Arturo Pérez-Reverte',
+      publisher: 'Alfaguara',
+      pages: 256,
+      image_url:
+        'https://images-na.ssl-images-amazon.com/images/I/41%2B-e981m1L._SX311_BO1,204,203,200_.jpg',
+    },
+    {
+      id: 2,
+      title: 'Historia de España contada para escépticos',
+      genre: 'Historia',
+      description:
+        'Como escribe el autor, no pretende ser veraz, justa y desapasionada, porque ninguna historia lo es. No está hecha para halagar a reyes y gobernantes, ni pretende halagar a los banqueros, ni a la Conferencia Episcopal, ni al colectivo gay.',
+      author: 'Juan Eslava Galán',
+      publisher: 'Booket',
+      pages: 592,
+      image_url:
+        'https://images-na.ssl-images-amazon.com/images/I/51IyZ5Mq8YL._SX326_BO1,204,203,200_.jpg',
+    },
+  ];
+  findAll(params): Book[] { <4>
+    return this.books;
+  }
+
+  findBook(bookId: string): Book { <5>
+    return this.books[parseInt(bookId) - 1];
+  }
+
+  createBook(newBook: BookDto): BookDto { <6>
+    return newBook;
+  }
+
+  deleteBook(bookId: string): Book { <7>
+    return this.books[parseInt(bookId) - 1];
+  }
+
+  updateBook(bookId: string, newBook: BookDto): Book { <8>
+    return this.books[parseInt(bookId) - 1];
+  }
+}
+----
+<1> DTO del libro (no contiene el `id`)
+<2> Interface del libro (contiene el `id`)
+<3> Lista de libros de ejemplo mientras se desarrolla el acceso a BD del servicio
+<4> El método devuelve un array de `Book` con todos los libros
+<5> El método devuelve un `Book`, que contiene el `id`. Devuelve un libro a modo de ejemplo
+<6> El método toma un `BookDto` como argumento (libro sin `id`) y lo devuelve. Devuelve el libro insertado
+<7> El método devuelve un `Book`, que contiene el `id`. Devuelve un libro a modo de ejemplo
+<8> El método toma un `BookDto` como argumento (libro sin `id`) y devuelve un `Book`, que sí contiene el `id`. Devuelve un libro a modo de ejemplo
+
+### El controlador
+
+Se trata de usar los tipos que se usan los parámetros de las funciones en las peticiones y de los tipos que devuelven.
+
+Archivo `books/books.controller.ts`
+
+[source, ts]
+----
+import {
+  Controller,
+  Get,
+  Param,
+  Req,
+  Post,
+  Body,
+  Delete,
+  Put,
+} from '@nestjs/common';
+import { BooksService } from './books.service';
+import { Request } from 'express';
+import { BookDto } from './book.dto';
+import { Book } from './book.interface';
+
+export class BooksController {
+  constructor(private booksService: BooksService) {}
+
+  findAll(@Req() request: Request): Book[] {
+    console.log(request.query);
+    return this.booksService.findAll(request.query);
+  }
+
+  findBook(@Param('bookId') bookId: string): Book {
+    return this.booksService.findBook(bookId);
+  }
+
+  createBook(@Body() newBook: BookDto): BookDto {
+    return this.booksService.createBook(newBook);
+  }
+
+  deleteBook(@Param('bookId') bookId: string): Book {
+    return this.booksService.deleteBook(bookId);
+  }
+
+  updateBook(@Param('bookId') bookId: string, @Body() newBook: BookDto): Book {
+    return this.booksService.updateBook(bookId, newBook);
+  }
+}
+----
+
+## Documentación de la API con Swagger (OpenAPI)
 
 NestJS cuenta con un módulo que permite la generación automática de la documentación en Swagger (OpenAPI). Esto permite obtener la documentación de la API y sus endpoints mediante decoradores en el código.
 
@@ -866,7 +982,7 @@ A continuación se muestra un fragmento de la anotación en `books/books.control
 ...
 import { BookDto } from './book.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-
+...
 @ApiTags('book') <1> 
 @Controller('books')
 export class BooksController {
@@ -895,4 +1011,51 @@ La figura siguiente muestra cómo quedaría la documentación servida el la ruta
 
 image::Swagger.png[]
 
-Para más información, consultar la  https://docs.nestjs.com/recipes/swagger[documentación oficial]
+Para más información sobre Swagger, consultar la  https://docs.nestjs.com/recipes/swagger[documentación oficial]
+
+## Documentación del código
+
+NestJS usa https://compodoc.app/[Compodoc], una herramienta de documentación para Angular. Al documentar el código los miembros del equipo de desarrollo podrán entender fácilmente las características de la aplicación o librería. La documentación se anota mediante https://jsdoc.app/[JSDoc] siguiendo este esquema:
+
+[source, ts]
+----
+/**
+ * Supported comment
+ */
+----
+
+Entre los tags JSDoc, destacan:
+
+* `@returns {Type} Descripción`
+* `@param {Type} Name Description`
+* `@ignore` para excluir un fragmento de código de la documentación
+
+Para instalar Compodoc en un proyecto NestJS basta con añadir la dependencia:
+
+[source, bash]
+----
+$ npm i -D @compodoc/compodoc
+----
+
+La documentación se generará desde la línea de comandos. Esto generará una carpeta `documentation` en el proyecto que se podrá servir con el proyecto o en un portal de ámbito más global donde estén todas las documentaciones de los proyectos desarrollados por el equipo.
+
+[source, bash]
+----
+$ npx compodoc -p tsconfig.json -s --theme material
+----
+
+[NOTE]
+====
+El parámetro `-s` inicia un servidor en el puerto 8080 para poder consultar la documentación. El parámetro `--theme material` aplica el tema `material` a la documentación. 
+====
+
+Compodoc genera una página `Overview` donde presenta un diagrama con los disntintos componentes y sus relaciones, algo muy interesante para hacerse una primera idea de la composición e interacción del software desarrollado.
+
+image::Compodoc-Overview.png[]
+
+La figura siguiente ilustra el formato de la documentación de un componente de la aplicación.
+
+image::Compodoc-Documentacion.png[]
+
+
+Para más información sobre JSDoc, consultar la https://compodoc.app/[documentación oficial]
