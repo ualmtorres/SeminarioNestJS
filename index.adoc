@@ -13,7 +13,7 @@ Codificación, idioma, tabla de contenidos, tipo de documento
 ////
 Nombre y título del trabajo
 ////
-# Introducción a Nest.js
+# Introducción a NestJS
 Servicio de las Tecnologías de la Información y las Comunicaciones - Universidad de Almería
 
 image::logocloudstic.png[]
@@ -27,15 +27,23 @@ image::logocloudstic.png[]
 ////
 COLOCA A CONTINUACION EL RESUMEN
 ////
-Resumen
+NestJS es un framework para el desearrollo de aplicaciones Node.js en el lado del servidor. Se programa en JavaScript y proporciona una arquitectura en la aplicación que permite el desarrollo de aplicaciones más fáciles de mantener. Su arquitectura está bastante inspirada en Angular lo que facilita el trabajo al equipo de desarrollo no tener que usar dos formas diferentes de trabajo en el backend y en el frontend.
 
 
 ////
 COLOCA A CONTINUACION LOS OBJETIVOS
 ////
 .Objetivos
-* asdsad
-* asdasd
+* Conocer el funcionamiento de los controladores y los servicios
+* Usar el CLI de Nest para la creación de componentes de la aplicación
+* Crear los métodos básicos CRUD de una aplicación
+* Saber cómo capturar los parámetros de las peticiones HTTP
+* Conocer las diferencias y utilidades de las _entities_ de los ORM (Object Relational Mappers), las interfaces y los DTO (Data Transfer Objects)
+* Crear una API sencilla con datos mockeados
+* Crear servicios basados en bases de datos
+* Usar Swagger para la documentación de la API
+* Usar Compodoc para la documentación de la aplicación
+* Registrar las operaciones de la aplicación en archivos de log
 
 [TIP]
 ====
@@ -81,9 +89,22 @@ Esto crea un proyecto y lo ejecuta en el puerto 3000 en modo _live reload_.
 
 image::HelloWorld.png[]
 
+[NOTE]
+====
+Se puede cambiar el puerto en el que se sirve la aplicación modificando el archivo `main.ts`
+
+[source, ts]
+----
+  await app.listen(3000); <1>
+----
+<1> Cambiar por el puerto deseado
+====
+
 ### Funcionamiento (Servicios y Controladores)
 
-Los servicios se encargan de abstraer la complejidad y la lógica del negocio a una clase aparte. Los servicios tienen el decorador `@Injectable`. Estos servicios se podrán inyectar en controladores o en otros servicios.
+Los servicios se encargan de abstraer la complejidad y la lógica del negocio a una clase aparte. El CLI de NestJS añade el decorador `@Injectable` a los servicios durante su creación. Estos servicios se podrán inyectar en controladores o en otros servicios.
+
+Archivo `app.service.ts`
 
 [source, ts]
 ----
@@ -99,7 +120,8 @@ export class AppService {
 <1> Decorador que permite que el servicio pueda ser inyectado en controladores y en otros servicios
 <2> Función que proporciona una funcionalidad determinada
 
-El controlador se encarga de escuchar las peticiones que llegan a la aplicación y preparar las respuestas que proporciona la aplicación. Los controladores NestJS tienen un decorador `@Controller`. NestJS permite el uso de rutas como parámetros del decorador `@Controller`
+El controlador se encarga por un lado de escuchar las peticiones que llegan a la aplicación. Por otro lado, se encarga de preparar las respuestas que proporciona la aplicación. El CLI de NestJS añade el decorador `@Controller` a los controladores durante su creación. NestJS permite el uso de rutas como parámetros del decorador `@Controller`
+
 Archivo `app.controller.ts`
 
 [source, ts]
@@ -120,8 +142,8 @@ export class AppController {
 <1> Importación del servicio
 <2> Decorador que indica a NestJS que es un controlador
 <3> Inyección del servicio
-<4> Método y ruta (vacía) atendida por el controlador
-<5> Función a ejecutar al tras invocar la ruta
+<4> Tipo de petición HTTP y ruta (vacía) atendida por el controlador
+<5> Función a ejecutar al tras invocar la ruta con una petición `GET`
 <6> Invocación al servicio que resuelve la petición
 
 ### Definir un prefijo para la API.
@@ -149,7 +171,7 @@ La aplicación ahora deberá ser llamada incluyendo el prefijo:
 http://localhost:3000/api/v1
 ----
 
-Si no incluimos el prefijo y seguimos invocando a `http://localhost:3000` obtenendremos el siguiente error:
+Si no incluimos el prefijo y seguimos invocando a `http://localhost:3000` obtenendremos el siguiente error. Este error indica que la aplicación no tiene nada que respponda en esa ruta a ese tipo de petición HTTP.
 
 [source, json]
 ----
@@ -162,17 +184,19 @@ Si no incluimos el prefijo y seguimos invocando a `http://localhost:3000` obtene
 
 ## Creación de nuestro primer servicio y controlador
 
+Desde la línea de comandos usaremos el CLI de NestJS.
+
 [source, bash]
 ----
 $ nest g service books
 $ nest g controller books
 ----
 
-El servicio está disponible en `books/books.service.ts` y el controlador está disponible en `books.controller.ts`. Los archivos `.spec.ts` son archivos para pruebas que trataremos aquí.
+El servicio creado está disponible en `books/books.service.ts` y el controlador creado está disponible en `books.controller.ts`. Los archivos `.spec.ts` son archivos para pruebas que no trataremos aquí.
 
 [NOTE]
 ====
-Se puede observar que el CLI de NestJS ha generado el archivo del servicio `books/books.service.ts` con el decorador `@Injectable` y el archivo del controlador `books.controller.ts` con el decorador `@Controller`
+El CLI de NestJS ha generado el archivo del servicio `books/books.service.ts` con el decorador `@Injectable` y el archivo del controlador `books.controller.ts` con el decorador `@Controller`
 ====
 
 La creación del servicio y del controlador han modificado el archivo `app.module.ts` incorporándolos a la lista de servicios y controladores de la aplicación.
@@ -199,7 +223,7 @@ export class AppModule {}
 
 [NOTE]
 ====
-Los _providers_ son un concepto de un nivel de abstracción mayor al de los servicios. Cuando decíamos que los servicios se encargaban de abstraer la complejidad y la lógica del negocio a una clase aparte, realmente se debía a que esta abstracción es propia de los _providers_. Los servicios simplemente lo heredan de los _providers_.
+Los _providers_ son un concepto de un nivel de abstracción mayor al de los servicios. Cuando decíamos que los servicios se encargaban de abstraer la complejidad y la lógica del negocio a una clase aparte, realmente se debía a que esta abstracción es propia de los _providers_. Al ser un servicio un tipo particular de _provider_ simplemente heredan su comportamiento.
 
 Un _provider_ puede ser un servicio, pero también puede ser un repositorio, una factoría o un _helper_.
 ====
@@ -210,10 +234,10 @@ Implementamos las funciones que proporcionan los datos.
 
 [NOTE]
 ====
-Es buena práctica comenzar desarrollando todas las funciones que necesitemos indicando simplemente que han sido llamadas. Posteriormente, le iremos añadiendo su lógica real de forma progresiva. Esto nos permite tener los componentes y las llamadas funcionando sin tener ningún tipo de complejidad añadida.
+Es buena práctica comenzar desarrollando todas las funciones que necesitemos ofreciendo inicialmente la funcionalidad de mostrar simplemente que han sido llamadas. Posteriormente, le iremos añadiendo su lógica real de forma progresiva. Esto nos permite tener inicialmente los componentes y las llamadas funcionando e interactuando sin adentrarnos en la complejidad del dominio.
 ====
 
-Archivo `books/boo.service.ts`
+Archivo `books/book.service.ts`
 
 [source, ts]
 ----
@@ -233,7 +257,7 @@ export class BooksService {
 Comenzamos añadiendo simplemente por ahora: 
 
 * El constructor donde se inyecta el servicio para poder usarlo
-* Creando la primera ruta y su método HTTP asociado que vamos a probar
+* Creando la primera ruta y el método HTTP asociado que vamos a probar
 
 [source, ts]
 ----
@@ -263,13 +287,25 @@ image::PrimerServicio.png[]
 
 ## Creación de la primera versión de los endpoints
 
-Comenzaremos haciendo el _cascarón_ de los endpoints para todas las rutas permitidas pero en una versión muy preliminar. Los servicios sólo devolverán si han funcionado correctamente y los parámetros pasados. Una vez que esto funcione correctamente podremos sustituirlos por servicios que tengan una respuesta más real.
+Comenzaremos haciendo el _armazón (scaffolfding)_ de los endpoints para todas las rutas permitidas pero en una versión muy preliminar. Los servicios se limitarán a mostrar que han sido llamados y a mostrar los parámetros pasados. Una vez que todos funcionen correctamente podremos sustituirlos por servicios que tengan la respuesta real que exige el problema.
+
+
+.Endpoints
+[width="100%",options="header"]
+|====================
+| Método | Endpoint |  Descripción
+| `GET` | `/api/v1/books` |  Obtener lista de libros
+| `GET` | `/api/v1/books/{bookId}` |  Devuelve información sobre un libro específico
+| `POST` | `/api/v1/books` | Crear un libro
+| `DELETE` | `/api/v1/books/{bookId}` |  Eliminar un libro específico
+| `PUT` | `/api/v1/books/{bookId}` |  Modificar un libro específico
+|====================
 
 ### Recuperación de un libro
 
 #### El servicio
 
-Añadimos la función que implementa el servicio de recuperación de un libro. Tomará como argumento el id del libro e inicialmente devolverá el nombre de la función y el id pasado como argumento.
+Añadimos la función que implementa el servicio de recuperación de un libro específico. Tomará como argumento el `id` del libro e inicialmente se limitará a devolver un mensaje con el propio nombre de la función y el `id` pasado como argumento. Esto permite comprobar que la función ha sido llamada correctamente.
 
 Archivo `books/book.service.ts`
 
@@ -284,12 +320,13 @@ Archivo `books/book.service.ts`
 
 #### El controlador
 
-Añadimos la ruta que implementa la petición. Tomará como parámetro el id del libro (`bookId`). Usaremos el decorador NestJS `@Param`
+Añadimos la ruta que implementa la petición. Tomará como parámetro el `id` del libro (`bookId`). Usaremos el decorador NestJS `@Param` para obtener el parámetro de la petición.
 
 Archivo `books/book.controller.ts`
 
 [source, ts]
 ----
+import { Param } from '@nestjs/common';
 ...
 @Controller('books')
 export class BooksController {
@@ -301,7 +338,7 @@ export class BooksController {
 ...
 ----
 <1> `bookId` es el nombre que se le da al argumento en la petición
-<2> Método asociado a la petición con referencia al argumento de la petición y parámetro que se recibe en el método
+<2> Método asociado a la petición con referencia al argumento de la petición y variable asociada para el método
 <3> Llamada al método del servicio que resuelve la petición
 
 [NOTE]
@@ -323,11 +360,11 @@ image::GetBookV0.png[]
 
 ### Filtrado mediante parámetros. Recuperación de todos los libros en orden descendente.
 
-En la URL se pueden pasar parámetros en forma de una lista de pares clave valor. Por ejemplo: `http://localhost:3000/api/v1/books?sort=1`. Los parámetro son recogidos en NestJS con el decorador `@Query()`
+En la URL se pueden pasar parámetros en forma de una lista de pares clave valor. Por ejemplo: `http://localhost:3000/api/v1/books?sort=1`. Los parámetros son recogidos en NestJS con el decorador `@Query()`
 
 .Nuevo endpoint o sólo parametros
 ****
-Puede surgir la duda de si la recuperación de libros de forma ordenada es un nuevo endpoint o se trata de añadir parámetros a un endpoint existente. Se trata de elegir entre estas dos alternativas:
+Puede surgir la duda de si la recuperación de libros de forma ordenada es un nuevo endpoint o se trata de añadir parámetros a un endpoint existente. Es decir, se trata de elegir entre estas dos alternativas:
 
 . `http://localhost:3000/api/v1/books/sort/1`
 . `http://localhost:3000/api/v1/books?sort=1`
@@ -340,16 +377,16 @@ Esta misma solución es aplicable si hay varios parámetros. Por ejemplo, ordena
 
 [NOTE]
 ====
-Nótese como la alternativa de uso de parámetros reduce la cantidad de endpoints a tratar y permite que los parámetros sean opcionales.
-El servicio tendrá que encargarse de determinar cómo actuar con los parámetros de la petición.
+La alternativa de uso de parámetros reduce la cantidad de endpoints a tratar y permite que los parámetros sean opcionales.
+El servicio tendrá que encargarse de determinar cómo trabajar con los parámetros de la petición.
 ====
 
-Como la petición de recuperación de libros de forma ordenada sigue devolviendo una lista de libros con la misma estructura, optamos por implementar esta funcionalidad mediante parámetros, trasladando la lógica al servicio.
+Como la petición de recuperación de libros de forma ordenada sigue devolviendo una lista de libros con la misma estructura, optamos por implementar esta funcionalidad mediante parámetros, trasladando la lógica de su interptretación al servicio.
 ****
 
 #### El servicio
 
-La versión preliminar del servicio parametrizado modificará el servicio existente de recuperación de libros. La función tomará los argumentos y se limitará a devolver el nombre de la función y el argumento (si existe)
+La versión preliminar del servicio parametrizado modificará el servicio existente de recuperación de libros. La función tomará los argumentos y se limitará a devolver un mensaje con el propio nombre de la función y el argumento (si existe). Esto permite comprobar que la función ha sido llamada correctamente.
 
 Archivo `books/book.service.ts`
 
@@ -366,9 +403,15 @@ Archivo `books/book.service.ts`
 
 #### El controlador
 
+Modificamos la ruta que implementa la petición. Tomará como parámetro el tipo de ordenación. Usaremos el decorador NestJS @Query para obtener el parámetro de la petición.
+
+Archivo `books/book.controller.ts`
+
 [source, ts]
 ----
+import { Query } from '@nestjs/common';
 ...
+  @Get()
   findAll(@Query('order') order: string) { <1>
     let params = []; <2>
 
@@ -382,14 +425,14 @@ Archivo `books/book.service.ts`
 ----
 <1> Captura del parámetro `order` en una variable `order`
 <2> Array para almacenamiento de parámetros
-<3> Si se ha pasado el parámetro en la petición, se introduce en el array
+<3> Si se ha pasado el parámetro en la petición, se introduce en el array de parámetros
 <4> Llamada al servicio con los parámetros leídos
 
 #### Una solución más dinámica
 
-La solución planteada para el uso de parámetros hace que ante nuevos parámetros en las peticiones se tenga que modificar tanto el controlador (para trabajar con los nuevos parámetros) como el servicio, que es el que hace uso de ellos.
+La solución planteada para el uso de parámetros hace que ante nuevos parámetros en las peticiones se tenga que modificar tanto el controlador (añadiendo nuevos decoradores `@Query` para los nuevos parámetros) como el servicio, que es el que hace uso de ellos.
 
-El decorador `@Req` nos permite acceder a una petición. En nuestro caso estamos interesados en acceder a `query`. Esta `query` contiene un JSON con los pares parámetro valor pasados en la petición. Podemos pasar directamente este JSON al servicio y que sea el servicio en que se encargue de acceder a su contenido y actuar como corresponda.
+El decorador `@Req` nos permite acceder a todos los datos de una petición. En nuestro caso estamos interesados en acceder a `query`. Esta `query` contiene un JSON con los pares parámetro-valor pasados en la petición. La idea es pasar directamente este JSON al servicio y que sea el servicio en que se encargue de acceder a su contenido y actuar como corresponda.
 
 El servicio `books/book.service.ts` adaptado para un nuevo parámetro (`limit`) quedaría así.
 
@@ -418,7 +461,7 @@ El controdor `books/book.controller.ts` ahora quedaría así:
 ----
 import { Req } from '@nestjs/common';
 import { BooksService } from './books.service';
-import { Request } from 'express';
+import { Request } from 'express'; 
 ...
 
 @Controller('books')
@@ -427,7 +470,7 @@ export class BooksController {
 
   @Get()
   findAll(@Req() request: Request) { <1>
-    return this.booksService.findAll(request.query);
+    return this.booksService.findAll(request.query); <2>
   }
 ...
 }
@@ -445,13 +488,13 @@ Si hiciéramos la petición `http://localhost:3000/api/v1/books?order=1&limit=10
 ----
 ====
 
-La pantalla siguiente muestra el resultado de realizar la petición con dos parámertros `order` y `limit`.
+La pantalla siguiente muestra el resultado de realizar la petición con dos parámetros `order` y `limit`.
 
 image::ParametrosDinamicos.png[]
 
 ### Creación de un libro
 
-Los nuevos objetos se pasarán como JSON en el `body` de la petición. El cuerpo de la respuesta contedrá el objeto creado.
+Los objetos a crear se pasarán en el `body` de la petición en formato JSON. El cuerpo de la respuesta contedrá el objeto creado.
 
 Supongamos que deseamos insertar el libro siguiente:
 
@@ -470,7 +513,7 @@ Supongamos que deseamos insertar el libro siguiente:
 
 #### El servicio
 
-La versión preliminar del servicio para crear un nnuevo libro se limitará a devolver el libro que le llega en el `body`
+La versión preliminar del servicio para crear un nuevo libro se limitará a devolver el libro que le llega como parámetro. Esto permite comprobar que la función ha sido llamada correctamente.
 
 Archivo `books/book.service.ts`
 
@@ -484,6 +527,10 @@ Archivo `books/book.service.ts`
 ----
 
 #### El controlador
+
+El decorador @Body nos permite acceder al `body` enviado en una petición. 
+
+Archivo `books/book.controller.ts`
 
 [source, ts]
 ----
@@ -506,8 +553,8 @@ export class BooksController {
 }
 ----
 <1> Decorador para el método Post
-<2> Decorador para el objeto `body`. Los datos pasados para el nuevo libro están en la variable `body`
-<3> Creación de un nuevo objeto para el posible tratamiento de los datos recibidos
+<2> Decorador para el objeto `body`. Los datos pasados para el nuevo libro se tratan en la variable `body`
+<3> Creación de un nuevo objeto para poder tratar los datos recibidos
 <4> Llamada al servicio de creación de libros con el libro recibido
 
 La figura siguiente muestra el resultado de la operación `POST` con el nuevo libro y la respuesta obtenida.
@@ -516,11 +563,11 @@ image::PostBook.png[]
 
 ### Eliminación de un libro
 
-La eliminación es muy similar a la de búsqueda de un elemento por id. Se intercepta el id de la ruta.
+La eliminación es muy similar a la de búsqueda de un elemento por `id`. Se intercepta el `id` de la ruta y se llama al servicio.
 
 #### El servicio
 
-Añadimos la función que implementa el servicio de eliminación de un libro. Se trata de una función muy similar a la de buscar un libro. Tomará como argumento el id del libro e inicialmente devolverá el nombre de la función y el id pasado como argumento.
+Añadimos la función que implementa el servicio de eliminación de un libro. Se trata de una función muy similar a la de buscar un libro. Tomará como argumento el `id` del libro e inicialmente se limitará a devolver un mensaje con el nombre de la función y el id pasado como argumento. Esto permite comprobar que la función ha sido llamada correctamente.
 
 Archivo `books/book.service.ts`
 
@@ -535,7 +582,7 @@ Archivo `books/book.service.ts`
 
 #### El controlador
 
-Añadimos la ruta que implementa la petición. Tomará como parámetro el id del libro (`bookId`). Usaremos el decorador NestJS `@Delete`
+Añadimos la ruta que implementa la petición. Tomará como parámetro el `id` del libro (`bookId`). Usaremos el decorador NestJS `@Delete`
 
 Archivo `books/book.controller.ts`
 
@@ -552,7 +599,7 @@ export class BooksController {
 ...
 ----
 <1> `bookId` es el nombre que se le da al argumento en la petición
-<2> Método asociado a la petición con referencia al argumento de la petición y parámetro que se recibe en el método
+<2> Método asociado a la petición con referencia al argumento de la petición y variable asociada para el método
 <3> Llamada al método del servicio que resuelve la petición
 
 Si ahora hacemos un `DELETE` contra `http://localhost:3000/api/v1/books/1` el controlador interceptará la petición, asignará `1` al parámetro `bookId` y obtendremos la respuesta siguiente.
@@ -561,11 +608,11 @@ image::DeleteBookV0.png[]
 
 ### Modificación de un libro
 
-La modificación se puede ver como una oepración que combina búsqueda y paso del _body_ con los datos a actualizar. Se intercepta el `id` de la ruta el `body`  de la petición.
+La modificación se puede ver como una operación que combina búsqueda y paso del `body` con los datos a actualizar. Se intercepta el `id` de la ruta el `body`  de la petición.
 
 #### El servicio
 
-Añadimos la función que implementa el servicio de modificación de un libro. Tomará como argumentos el id del libro y los nuevos datos del libro. Inicialmente devolverá los datos del libro modificado.
+Añadimos la función que implementa el servicio de modificación de un libro. Tomará como argumentos el `id` del libro y los nuevos datos del libro. Inicialmente devolverá los datos del libro modificado. Esto permite comprobar que la función ha sido llamada correctamente.
 
 Archivo `books/book.service.ts`
 
@@ -580,7 +627,7 @@ Archivo `books/book.service.ts`
 
 #### El controlador
 
-Añadimos la ruta que implementa la petición. Tomará como parámetro el id del libro (`bookId`). Usaremos el decorador NestJS `@Put`
+Añadimos la ruta que implementa la petición. Tomará como parámetro el `id` del libro (`bookId`). Usaremos el decorador NestJS `@Put`
 
 Archivo `books/book.controller.ts`
 
@@ -598,31 +645,31 @@ export class BooksController {
 ...
 ----
 <1> `bookId` es el nombre que se le da al argumento en la petición
-<2> Método asociado a la petición con referencia al argumento de la petición, parámetro que se recibe en el método y cuerpo con los datos del nuevo libro
+<2> Método asociado a la petición con referencia al argumento de la petición, variables asociada para el método y cuerpo con los nuevos datos del libro
 <3> Llamada al método del servicio que resuelve la petición
 
-Si ahora hacemos un `UPDATE` contra `http://localhost:3000/api/v1/books/1` y le pasamos en el `body` el JSON con los nuevos datos del libro, el controlador interceptará la petición, asignará `1` al parámetro `bookId`, pasará el cuerpo, los pasará al servicio y obtendremos la respuesta siguiente con los nuevos datos del libro.
+Si ahora hacemos un `UPDATE` contra `http://localhost:3000/api/v1/books/1` y le pasamos en el `body` el JSON con los nuevos datos del libro, el controlador interceptará la petición, asignará `1` al parámetro `bookId`, pasará el cuerpo, el controlador los pasará al servicio y obtendremos la respuesta siguiente con los nuevos datos del libro.
 
 image::PutBookV0.png[]
 
 ## Tipado de objetos
 
-Hasta ahora hemos tratados con el objeto libro, con el `body` de las peticiones que hacen `POST` o `PUT` y en ninguna hemos indicado un tipo de datos. Su tipo queda como `any`. Sin embargo, esto no es una buena práctica. El uso de tipos nos permitirá durante el desarrollo determinar las propiedades aplicables a un objeto, la estructura que tienen que tener los objetos de las peticiones, y demás.
+Hasta ahora hemos tratados con el objeto libro, con el `body` de las peticiones que hacen `POST` o `PUT` y en ninguna hemos indicado un tipo de datos. Su tipo queda entonces como `any`. Sin embargo, esto no es una buena práctica. El uso de tipos nos permitirá durante el desarrollo determinar las propiedades aplicables a un objeto, la estructura que tienen que tener los objetos de las peticiones, y demás.
 
-En este tutorial vamos a ver distintos tipos aplicables a los objetos. Para favorecer su comprensión seguimos con el ejemplo de los libros y supongamos que vamos a usar una base de datos para persistir los datos. En este caso tendríamos lo siguiente:
+En este tutorial vamos a ver distintos tipos aplicables a los objetos. Para favorecer su comprensión seguimos con el ejemplo de los libros y suponemos que vamos a usar una base de datos para persistir los datos. En este caso tendríamos lo siguiente:
 
-* Los libros se podría modelar como una tabla en una base de datos relacional, como una colección en una base de datos de documentos, ... Estaríamos hablando del nivel de bases de datos.
-* Si decidimos usar un ORM, ODM o similar, necesitaremos crear un objeto `entity` que represente la estructura de lo que se almacena en la base de datos. En nuestro caso, el objeto `entity` para libro podría tener las mismas propiedades que el objeto de la base de datos. Los objetos `entity` son los que se almacenan y se leen de la base de datos.
-* Por otro lado, a nivel de desarrollo, necesitamos manipular las propiedades de un objeto para no haccer referencia a propiedades inexistentes, evitar errores respetando los tipos de las propiedades de los objetos, y demás. Para ello, necesitaremos tener un tipo que represente a los objetos del negocio desde el punto de la programación. Estos tipos no tienen por qué ser sustituidos por los tipos anteriores de los ORM/ODM, ya que nuestra aplicación puede que no usase ORM/ODM y no por ello dejarían de ser necesarios. Los tipos en este nivel los denominamos interfaces.
-* Por último, hemos visto que las peticiones envían sus datos para que sean procesados por los servicios. Sin embargo, los datos enviados en las peticiones no tienen por qué tener la misma estructura que las interfaces o que las `entity` definidas. Por ejemplo, en la petición para crear un libro puede que no se envíe el `id` del libro a crear porque se trata de un valor generado por el sistema. Por tanto, su tipo podría no coincidir con alguno de los tipos anteriores. Estaríamos hablando de un tipo exclusivo para la creación de libros (el tipo que contiene las propiedades que se pasan para crear un libro). Además, operaciones diferentes podrían usar tipos diferentes. Un caso sería que las modificaciones no permitiesen modificar todos los campos de un libro. Estaríamos ante un nuevo tipo, el tipo de los objetos a modificar. A este tipo de objetos se les denomina DTO (Data Transfer Objects).
+* En la capa de base de datos los libros se podría modelar como una tabla en una base de datos relacional, como una colección en una base de datos de documentos,
+* Las **entities**. Si decidimos usar un https://es.wikipedia.org/wiki/Mapeo_objeto-relacional[ORM], https://www.quora.com/What-is-Object-Document-Mapping[ODM] o similar, necesitaremos crear un objeto `entity` que represente la estructura de lo que se almacena en la base de datos. En nuestro caso, el objeto `entity` para libro podría tener las mismas propiedades que el objeto de la base de datos. Los objetos `entity` son los que se almacenan y se leen de la base de datos.
+* Las **interfaces**. En el nivel de desarrollo necesitamos manipular las propiedades de un objeto para no hacer referencia a propiedades inexistentes, evitar errores de tipado al trabajar con las propiedades de los objetos, y demás. Para ello, necesitaremos tener un _tipo_ que represente a los objetos del negocio desde el punto de la programación. Estos tipos no tienen por que ser sustituidos por los tipos anteriores de los ORM/ODM, ya que nuestra aplicación puede que no usase ORM/ODM y no por ello dejarían de ser necesarios los tipos. Los tipos en este nivel los denominamos interfaces.
+* Los **DTO (Data Transfer Objects)**. Por último, hemos visto que las peticiones envían sus datos para que sean procesados por los servicios. Sin embargo, los datos enviados en las peticiones no tienen por que tener la misma estructura que las interfaces o que las _entities_ definidas. Por ejemplo, en la petición para crear un libro puede que no se envíe el `id` del libro a crear porque se trata de un valor generado por el sistema. Por tanto, el tipo usado en la petición podría no coincidir con alguno de los tipos anteriores (_entities_,  DTO). Estaríamos hablando de un tipo exclusivo para la creación de libros (el tipo que contiene las propiedades que se pasan para crear un libro). Además, operaciones diferentes podrían usar tipos diferentes. Un caso sería que las modificaciones no permitiesen modificar todos los campos de un libro. Estaríamos ante un nuevo tipo, el tipo de los objetos a modificar. A este tipo de objetos se les denomina DTO. (Es habitual usar `CreateBookDTO`, `UpdateBookDTO` para representar los tipos de los datos pasados al crear y actualizar libros si los tipos son diferentes)
 
 ### Creación de una interface para libros
 
-Se define una interface con las propiedades que representan a un libro. En nuestro caso crearíamos un archivo `book.interface.ts`
+Se define una interface con las propiedades que representan a un libro. En nuestro caso crearíamos un archivo `book.class.ts`
 
 [source, ts]
 ----
-export interface Book {
+export class Book {
   id: number;
   title: string;
   genre: string;
@@ -634,9 +681,14 @@ export interface Book {
 }
 ----
 
+[NOTE]
+====
+Definimos una clase en un lugar de una interface para poder instannciarla y simplificar el mockeado.
+====
+
 ### Creación de un DTO para libros
 
-Se define una clase `BookDto` que representa a las propiedades de un libro que se especifican y se envían cuando se realiza una petición para crear un libro. Hablamos de los datos que van en la petición y no tienen por que tener una correspondencia directa con un objeto completo del dominio. Incluso pueden contener propiedades de varios objetos del dominio. Como su nombre indica, los DTO representan a la estructura o al tipo de los datos que se están intercambiando.
+Se define una clase `BookDto` que representa a las propiedades de un libro que se especifican y se envían cuando se realiza una petición para crear un libro. Hablamos de los datos que van en la petición y no tienen por que tener una correspondencia directa con un objeto completo del dominio. Incluso pueden contener propiedades de varios objetos del dominio. Como su nombre indica, los DTO (Data Transfer Object) representan a la estructura o al tipo de los datos que se están intercambiando.
 
 [source, ts]
 ----
@@ -653,7 +705,7 @@ export class BookDto {
 
 [NOTE]
 ====
-Obsérvese como el DTO de los libros no contiene el `id` del libro. Esto se debe a que es una propiedad que los usuarios no envían en sus peticiones.
+El DTO de los libros no contiene el `id` del libro. Esto se debe a que es una propiedad que los usuarios no envían en sus peticiones.
 ====
 
 ### Modificación del controlador para el uso de tipos
@@ -690,14 +742,14 @@ export class BooksController {
 
 [NOTE]
 ====
-En este ejemplo se observa que se los objetos nuevos y los objetos modificados tienen el mismo tipo. Es decir, cuando se pasa un objeto a modificar, se pasa con todos las propiedades, salvo el `id`.
+En este ejemplo se observa que se los objetos nuevos y los objetos modificados tienen el mismo tipo. Es decir, cuando se pasa un objeto a modificar, en el `body` se pasa el libro sin `id`.
 ====
 
 Este tipado permite manipular de forma segura las propiedades de los libros ayudando a detectarse errores derivados de asignación de valores a tipos incorrectos.
 
 .Uno o varios DTO
 ****
-Un objeto puede tener DTO diferentes para operaciones diferntes. Por ejemplo, si decidiéramos que el DTO de un libro nuevo no contuviese el `id` pero el DTO de un libro a modificar sí lo contuviese tendríamos un caso de DTOs diferentes (p.e. `CreateBook.dto.ts` y `UpdateBook.dto.ts`)
+Un objeto puede tener DTO diferentes para operaciones diferentes. Por ejemplo, si decidiéramos que el DTO de un libro nuevo no contuviese el `id`, pero el DTO de un libro a modificar sí lo contuviese, tendríamos un caso de DTOs diferentes (p.e. `CreateBook.dto.ts` y `UpdateBook.dto.ts`)
 
 Archivo `CreateBook.dto.ts`
 
@@ -734,6 +786,8 @@ export class UpdateBookDto {
 
 ### Modificación del servicio para el uso de tipos
 
+Archivo `books/book.service.ts`
+
 [source, ts]
 ----
 ...
@@ -761,15 +815,17 @@ Este tipado permite manipular de forma segura las propiedades de los libros ayud
 
 ## Finalización del mockeado
 
-Hasta ahora, sólo estaban mockeadas con objetos del dominio las operaciones de creación y modificación. Las oepraciones de consulta y eliminación sólo devolvían un texto indicando que se había alcanzado el endpoint. En este apartado, haremos que todas las operaciones trabajen con datos del dominio aunque todavía será algo preliminar, ya que serán sólo un par de libros almacenados en el propio código y ninguna operación tratará con datos reales (p.e. la búsqueda de un libro siempre devolverá el mismo libro, la actualización/eliminación siempre informará que se ha modificado/eliminado el mismo libro). No obstante, esto permite que el controlador ya trate con los tipos de datos que devolverán los servicios cuando implementen su funcionalidad real.
+Hasta ahora, las únicas operaciones que estaban mockeadas con objetos del dominio eran las operaciones de creación y de modificación. Las operaciones de consulta y eliminación se limitabana a devolver un texto indicando que se había alcanzado el endpoint. En este apartado, haremos que todas las operaciones trabajen con datos del dominio aunque todavía será algo preliminar, ya que serán sólo un par de libros almacenados en el propio código y ninguna operación tratará con datos reales (p.e. la búsqueda de un libro siempre devolverá el mismo libro, la actualización/eliminación siempre informará que se ha modificado/eliminado el mismo libro). No obstante, esto permite que el controlador ya trate con los tipos de datos que devolverán los servicios cuando implementen su funcionalidad real.
 
 ### El servicio
+
+El archivo `books/boo.service.ts`
 
 [source, ts]
 ----
 import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
 import { BookDto } from './book.dto'; <1>
-import { Book } from './book.interface'; <2>
+import { Book } from './book.class'; <2>
 
 @Injectable()
 export class BooksService {
@@ -807,8 +863,19 @@ export class BooksService {
     return this.books[parseInt(bookId) - 1];
   }
 
-  createBook(newBook: BookDto): BookDto { <6>
-    return newBook;
+  createBook(newBook: BookDto): Book { <6>
+    let book = new Book();
+
+    book.id = 99;
+    book.author = newBook.author;
+    book.description = newBook.description;
+    book.genre = newBook.genre;
+    book.image_url = newBook.image_url;
+    book.pages = newBook.pages;
+    book.publisher = newBook.publisher;
+    book.title = newBook.title;
+
+    return book;
   }
 
   deleteBook(bookId: string): Book { <7>
@@ -825,13 +892,13 @@ export class BooksService {
 <3> Lista de libros de ejemplo mientras se desarrolla el acceso a BD del servicio
 <4> El método devuelve un array de `Book` con todos los libros
 <5> El método devuelve un `Book`, que contiene el `id`. Devuelve un libro a modo de ejemplo
-<6> El método toma un `BookDto` como argumento (libro sin `id`) y lo devuelve. Devuelve el libro insertado
-<7> El método devuelve un `Book`, que contiene el `id`. Devuelve un libro a modo de ejemplo
-<8> El método toma un `BookDto` como argumento (libro sin `id`) y devuelve un `Book`, que sí contiene el `id`. Devuelve un libro a modo de ejemplo
+<6> El método toma un `BookDto` como argumento (libro sin `id`) y devuelve un libro completo (con el `id`). Devuelve el libro insertado
+<7> El método devuelve un `Book`, que contiene el `id`. Devuelve un libro a eliminado modo de ejemplo
+<8> El método toma un `BookDto` como argumento (libro sin `id`) y devuelve un `Book`, que sí contiene el `id`. Devuelve un libro modificado a modo de ejemplo
 
 ### El controlador
 
-Se trata de usar los tipos que se usan los parámetros de las funciones en las peticiones y de los tipos que devuelven.
+Se trata de usar los tipos que usan los parámetros de las funciones en las peticiones y de los tipos que devuelven.
 
 Archivo `books/books.controller.ts`
 
@@ -850,7 +917,7 @@ import {
 import { BooksService } from './books.service';
 import { Request } from 'express';
 import { BookDto } from './book.dto';
-import { Book } from './book.interface';
+import { Book } from './book.class';
 
 export class BooksController {
   constructor(private booksService: BooksService) {}
@@ -864,7 +931,7 @@ export class BooksController {
     return this.booksService.findBook(bookId);
   }
 
-  createBook(@Body() newBook: BookDto): BookDto {
+  createBook(@Body() newBook: BookDto): Book {
     return this.booksService.createBook(newBook);
   }
 
@@ -904,7 +971,7 @@ async function bootstrap() {
   const options = new DocumentBuilder() <2>
     .setTitle('Bookstore REST API')
     .setDescription('API REST de Bookstore')
-    .setVersion('0.1')
+    .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, options); <3>
 
@@ -916,17 +983,17 @@ async function bootstrap() {
 bootstrap();
 ----
 <1> Importaciones necesarias
-<2> Configuración de opciones para la descripción de la documentación
+<2> Configuración de opciones generales de la documentación (título, versión, ...)
 <3> Creación de la documentación con las opciones configuradas
 <4> Especificación de la ruta relativa donde se sirve la documentación Swagger
 
 ### Documentación de los DTO
 
-En la clases DTO incluiremos un decorador `@ApiProperty()` antes de cada propiedad. A este decorador se le puede pasar un ejemplo que facilitare la introducción al uso de la API. 
+En la clases DTO incluiremos un decorador `@ApiProperty()` antes de cada propiedad. A este decorador se le puede pasar un ejemplo que facilite la introducción al uso de la API. 
 
 [NOTE]
 ====
-El uso de decoradores en los DTO permite que aparezcan el tipos y ejemplo definido siempre que use un DTO, lo que facilita bastante la interacción con la documentación.
+El uso de decoradores en los DTO permite que aparezcan el tipo y un ejemplo definido siempre que use un DTO, lo que facilita bastante la interacción con la documentación.
 ====
 
 [source, ts]
@@ -966,9 +1033,44 @@ export class BookDto {
 También hay que incluir decoradores `@ApiProperty` en interfaces y otras clases definidas para tipado.
 ====
 
+Archivo `books/book.class.ts`
+
+[source, ts]
+----
+import { ApiProperty } from '@nestjs/swagger';
+export class Book {
+  @ApiProperty({ example: 99 }) <1>
+  id: number;
+
+  @ApiProperty({ example: 'Don Quijote de la Mancha' })
+  title: string;
+
+  @ApiProperty({ example: 'Novela' })
+  genre: string;
+
+  @ApiProperty({
+    example: 'Esta edición del Ingenioso hidalgo don Quijote de la Mancha ...',
+  })
+  description: string;
+
+  @ApiProperty({ example: 'Miguel de Cervantes' })
+  author: string;
+
+  @ApiProperty({ example: 'Santillana' })
+  publisher: string;
+
+  @ApiProperty({ example: 592 })
+  pages: number;
+
+  @ApiProperty({ example: 'www.imagen.com/quijote.png' })
+  image_url: string;
+}
+----
+<1> Que también se muestre el id en los ejemplos de libros completos
+
 ### Documentación de los controladores
 
-Los métodos de los controladores se pueden agrupar mediante etiquetas Swagger. Para ello se usa el decorador `@ApiTags()`. Se puede usar el decorador a nivel de clase y agrupará a todos los métodos juntos en el mismo grupo. También se puede usar a nivel de método.
+Los métodos de los controladores se pueden agrupar mediante etiquetas Swagger. Para ello se usa el decorador `@ApiTags()`. Se puede usar el decorador a nivel de clase, lo que combinará a todos los métodos en el mismo grupo. También se puede usar a nivel de método.
 
 En cada operación se incluirá: 
 
@@ -992,7 +1094,7 @@ export class BooksController {
   @ApiResponse({ <3>
     status: 201,
     description: 'Datos del libro creado',
-    type: BookDto, <4>
+    type: Book, <4>
   })
   @ApiResponse({ status: 403, description: 'Forbidden.' }) <5>
   createBook(@Body() newBook: BookDto) {
@@ -1001,7 +1103,7 @@ export class BooksController {
 ...
 }
 ----
-<1> Especificación de etiqueta para agrupar a todos las operaciones de este controlador en un grupo (`book`)
+<1> Especificación de la etiqueta para combinar a todos las operaciones de este controlador en el grupo `book`
 <2> Descripción de la operación
 <3> Respuesta 201
 <4> Al especificar el tipo, se puede ver un ejemplo de la respuesta en la documentación
@@ -1026,7 +1128,7 @@ NestJS usa https://compodoc.app/[Compodoc], una herramienta de documentación pa
 
 Entre los tags JSDoc, destacan:
 
-* `@returns {Type} Descripción`
+* `@returns {Type} Description`
 * `@param {Type} Name Description`
 * `@ignore` para excluir un fragmento de código de la documentación
 
@@ -1037,7 +1139,7 @@ Para instalar Compodoc en un proyecto NestJS basta con añadir la dependencia:
 $ npm i -D @compodoc/compodoc
 ----
 
-La documentación se generará desde la línea de comandos. Esto generará una carpeta `documentation` en el proyecto que se podrá servir con el proyecto o en un portal de ámbito más global donde estén todas las documentaciones de los proyectos desarrollados por el equipo.
+La documentación se generará desde la línea de comandos mediante `npx` (una herramienta para ejecutar paquetes de Node disponible con `npm 6`). Esto generará una carpeta `documentation` en el proyecto que se podrá servir con el proyecto o en un portal de ámbito más global donde estén todas las documentaciones de los proyectos desarrollados por el equipo.
 
 [source, bash]
 ----
@@ -1046,7 +1148,7 @@ $ npx compodoc -p tsconfig.json -s --theme material
 
 [NOTE]
 ====
-El parámetro `-s` inicia un servidor en el puerto 8080 para poder consultar la documentación. El parámetro `--theme material` aplica el tema `material` a la documentación. 
+El parámetro `-s` inicia un servidor en el puerto 8080 para poder consultar la documentación. El parámetro `--theme material` aplica el tema `material` a la documentación. Para más información sobre las opciones de uso, consultar la https://compodoc.app/guides/options.html[documentación oficial]
 ====
 
 Compodoc genera una página `Overview` donde presenta un diagrama con los disntintos componentes y sus relaciones, algo muy interesante para hacerse una primera idea de la composición e interacción del software desarrollado.
