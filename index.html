@@ -479,6 +479,21 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </ul>
 </li>
 <li><a href="#truedocumentaci-n-del-c-digo">9. Documentación del código</a></li>
+<li><a href="#truecreaci-n-de-servicios-conectados-a-bases-de-datos">10. Creación de servicios conectados a bases de datos</a>
+<ul class="sectlevel2">
+<li><a href="#trueconfiguraci-n-de-un-servidor-mysql">10.1. Configuración de un servidor MySQL</a></li>
+<li><a href="#truetypeorm">10.2. TypeORM</a></li>
+<li><a href="#truepar-metros-de-la-conexi-n-a-la-base-de-datos">10.3. Parámetros de la conexión a la base de datos</a></li>
+<li><a href="#truecreaci-n-de-la-entidad">10.4. Creación de la entidad</a></li>
+<li><a href="#trueconfiguraci-n-de-la-conexi-n-a-la-base-de-datos">10.5. Configuración de la conexión a la base de datos</a></li>
+<li><a href="#trueel-servicio-8">10.6. El servicio</a></li>
+<li><a href="#trueel-controlador-8">10.7. El controlador</a></li>
+<li><a href="#truem-dulo-para-una-mejor-organizaci-n">10.8. Módulo para una mejor organización</a></li>
+<li><a href="#truemejora-de-la-configuraci-n-del-uso-del-orm">10.9. Mejora de la configuración del uso del ORM</a></li>
+<li><a href="#truecambio-a-un-servidor-postgresql">10.10. Cambio a un servidor PostgreSQL</a></li>
+</ul>
+</li>
+<li><a href="#trueap-ndice-a-datos-de-ejemplo">Apéndice A. Datos de ejemplo</a></li>
 </ul>
 </div>
 </div>
@@ -587,6 +602,22 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="literalblock">
 <div class="content">
 <pre>You accepted the DELETE request, but the resource can't be removed and the URI is instead reset to a default. 205 Reset Content.</pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">  @Post()
+  @ApiOperation({ summary: 'Crear un libro' })
+  @ApiResponse({
+    status: 201,
+    description: 'Datos del libro creado',
+    type: Book,
+  })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  createBook(@Res() res, @Body() newBook: BookDto): Book {
+    return res
+      .status(HttpStatus.OK)
+      .json({ status: 200, data: this.booksService.createBook(newBook) });</code></pre>
 </div>
 </div>
 </div>
@@ -2336,10 +2367,615 @@ export class BooksController {
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="truecreaci-n-de-servicios-conectados-a-bases-de-datos"><a class="anchor" href="#truecreaci-n-de-servicios-conectados-a-bases-de-datos"></a>10. Creación de servicios conectados a bases de datos</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Hasta ahora los servicios creados se limitan a proporcionar unos datos de prueba. Su cometido hasta ahora ha sido comprobar que son alcanzables desde los endpoints definidos en la API. A continación vamos a ver cómo conectar el servicio a una base de datos MySQL.</p>
+</div>
+<div class="sect2">
+<h3 id="trueconfiguraci-n-de-un-servidor-mysql"><a class="anchor" href="#trueconfiguraci-n-de-un-servidor-mysql"></a>10.1. Configuración de un servidor MySQL</h3>
+<div class="paragraph">
+<p>Para trabajar localmente con persistencia necesitamos una base de datos a la que conectarnos. Para no tener que instalar un servidor en nuestro equipo y no acoplar el desarrollo a nuestro equipo utilizaremos una <a href="https://hub.docker.com/_/mysql">imagen Docker de MySQL 5.7</a>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">$ docker run --name tutorial_mysql -e MYSQL_ROOT_PASSWORD=secret -p 3306:3306 -d mysql:5.7 <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Usaremos el password <code>secret</code> para la cuenta <code>root</code></td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Tras unos instantes (algo más si la imagen de MySQL 5.7 no está descargada en el equipo) habrá un contenedor en ejecución con el nombre <code>tutorial_mysql</code>. Iniciaremos una sesión interactiva para crear una base de datos, a la que denominaremos <code>tutorial</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">$ docker exec -it tutorial_mysql bash
+root@d0512407a21d:/# mysql -u root -p
+Enter password: <i class="conum" data-value="1"></i><b>(1)</b>
+...
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql&gt;
+mysql&gt; create database tutorial; <i class="conum" data-value="2"></i><b>(2)</b>
+Query OK, 1 row affected (0.00 sec)</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Introducir el password <code>secret</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Crear la base de datos <code>tutorial</code></td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="truetypeorm"><a class="anchor" href="#truetypeorm"></a>10.2. TypeORM</h3>
+<div class="paragraph">
+<p>Usaremos <a href="https://typeorm.io/#/">TypeORM</a> para la interacción con la base de datos. Esto nos aislará del gestor de base de datos elegido y hará que podamos cambiar de gestor de bases de datos de forma muy sencilla. El desarrollo con TypeORM acelera el proceso de desarrollo modelando entidades en el código y sincronizando estos modelos en la base de datos. TypeORM actualmente ofrece soporte para varias bases de datos relacionales, como PostgreSQL, Oracle, Microsoft SQL Server, SQLite, e incluso para bases de datos NoSQL, como MongoDB.</p>
+</div>
+<div class="paragraph">
+<p>Instalaremos las dependencias en el proyecto con</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">$ npm install --save @nestjs/typeorm typeorm mysql</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="truepar-metros-de-la-conexi-n-a-la-base-de-datos"><a class="anchor" href="#truepar-metros-de-la-conexi-n-a-la-base-de-datos"></a>10.3. Parámetros de la conexión a la base de datos</h3>
+<div class="paragraph">
+<p>Los parámetros de conexión a la base de datos se pueden colocar en un archivo <code>ormconfig.json</code> almacenado en la raíz del proyecto (junto al <code>package.json</code>)</p>
+</div>
+<div class="paragraph">
+<p>Archivo <code>ormconfig,json</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json" data-lang="json">{
+  "type": "mysql",
+  "host": "localhost",
+  "port": 3306,
+  "username": "root",
+  "password": "secret",
+  "database": "tutorial",
+  "entities": ["dist/**/*.entity.js"],
+  "synchronize": true
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="truecreaci-n-de-la-entidad"><a class="anchor" href="#truecreaci-n-de-la-entidad"></a>10.4. Creación de la entidad</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+
+@Entity()
+export class Book {
+  @PrimaryGeneratedColumn() <i class="conum" data-value="1"></i><b>(1)</b>
+  id: number;
+
+  @Column()
+  title: string;
+
+  @Column()
+  genre: string;
+
+  @Column('text') <i class="conum" data-value="2"></i><b>(2)</b>
+  description: string;
+
+  @Column()
+  author: string;
+
+  @Column()
+  publisher: string;
+
+  @Column()
+  pages: number;
+
+  @Column()
+  image_url: string;
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Decorador para indicar que es una clave primaria autonumérica</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Decorador para permitir texto largo</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="trueconfiguraci-n-de-la-conexi-n-a-la-base-de-datos"><a class="anchor" href="#trueconfiguraci-n-de-la-conexi-n-a-la-base-de-datos"></a>10.5. Configuración de la conexión a la base de datos</h3>
+<div class="paragraph">
+<p>Habíamos definido un archivo <code>ormconfig.json</code> con los parámetros de conexión a la base de datos. Para usarmos lo haremos desde <code>app.module.ts</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { TypeOrmModule } from '@nestjs/typeorm';
+...
+@Module({
+  imports: [
+    TypeOrmModule.forRoot(), <i class="conum" data-value="1"></i><b>(1)</b>
+    ...
+  ],
+  ....
+})
+export class AppModule {}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>De forma predeterminada, si no se pasa ningún argumento se buscan lo valores en <code>ormconfig.json</code> en la raíz del proyecto.</td>
+</tr>
+</table>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Configuración de los datos de conexión en el propio código</div>
+<div class="paragraph">
+<p>También se puede encontrar que los parámetros de conexión son colocados directamente como argumentos de TypeOrmModule.forRoot()</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-code" data-lang="code">...
+    TypeOrmModule.forRoot(
+      {
+      type: 'mysql',
+      host: 'localhost',
+      port: 3306,
+      username: 'root',
+      password: 'example',
+      database: 'my_nestjs_project',
+      entities: ['dist/**/*.entity.js'],
+      synchronize: true,
+      }
+...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>El problema de este enfoque está en que las credenciales se adjuntarán en los commits que se hagan de este archivo. En cambio unas credenciales almacenadas en un archivo <code>ormconfig.json</code> que esté incluido en el archivo <code>.gitignore</code> no expondría los datos sensibles al hacer commit.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="trueel-servicio-8"><a class="anchor" href="#trueel-servicio-8"></a>10.6. El servicio</h3>
+<div class="paragraph">
+<p>Archivo <code>books/books.service.ts</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
+import { BookDto } from './book.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Book } from './book.entity';
+import { Repository } from 'typeorm';
+
+@Injectable()
+export class BooksService {
+
+  constructor(
+    @InjectRepository(Book) private booksRepository: Repository&lt;Book&gt;,
+  ) {}
+
+  async findAll(params): Promise&lt;Book[]&gt; {
+    return await this.booksRepository.find();
+  }
+
+  async findBook(bookId: string): Promise&lt;Book&gt; {
+    return await this.booksRepository.findOne({ where: { id: bookId } });
+  }
+
+  createBook(newBook: BookDto): Promise&lt;Book&gt; {
+    return this.booksRepository.save(newBook);
+  }
+
+  async deleteBook(bookId: string): Promise&lt;any&gt; {
+    return await this.booksRepository.delete({ id: parseInt(bookId) });
+  }
+
+  async updateBook(bookId: string, newBook: BookDto): Promise&lt;Book&gt; {
+    let toUpdate = await this.booksRepository.findOne(bookId);
+
+    let updated = Object.assign(toUpdate, newBook);
+
+    return this.booksRepository.save(updated);
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="trueel-controlador-8"><a class="anchor" href="#trueel-controlador-8"></a>10.7. El controlador</h3>
+<div class="paragraph">
+<p>Archivo <code>books/books.controller.ts</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import {
+  Controller,
+  Get,
+  Param,
+  Req,
+  Post,
+  Body,
+  Delete,
+  Put,
+} from '@nestjs/common';
+import { BooksService } from './books.service';
+import { Request } from 'express';
+import { BookDto } from './book.dto';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Book } from './book.entity'; <i class="conum" data-value="1"></i><b>(1)</b>
+
+@Controller('books')
+export class BooksController {
+
+  constructor(private booksService: BooksService) {}
+
+  @Get()
+  findAll(@Req() request: Request): Promise&lt;Book[]&gt; {
+    console.log(request.query);
+    return this.booksService.findAll(request.query);
+  }
+
+  @Get(':bookId')
+  findBook(@Param('bookId') bookId: string): Promise&lt;Book&gt; {
+    return this.booksService.findBook(bookId);
+  }
+
+  @Post()
+  createBook(@Body() newBook: BookDto): Promise&lt;Book&gt; {
+    return this.booksService.createBook(newBook);
+  }
+
+  @Delete(':bookId')
+  deleteBook(@Param('bookId') bookId: string): Promise&lt;Book&gt; {
+    return this.booksService.deleteBook(bookId);
+  }
+
+
+  @Put(':bookId')
+  updateBook(
+    @Param('bookId') bookId: string,
+    @Body() newBook: BookDto,
+  ): Promise&lt;Book&gt; {
+    return this.booksService.updateBook(bookId, newBook);
+  }
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>El tipo de la interfaz y el de la entidad coinciden. Nos quedamos con el de la entidad.</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="truem-dulo-para-una-mejor-organizaci-n"><a class="anchor" href="#truem-dulo-para-una-mejor-organizaci-n"></a>10.8. Módulo para una mejor organización</h3>
+<div class="paragraph">
+<p>Archivo <code>books/books.module.ts</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { Module } from '@nestjs/common';
+import { Book } from './book.entity';
+import { BooksService } from './books.service';
+import { BooksController } from './books.controller';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([Book])],
+  providers: [BooksService],
+  controllers: [BooksController],
+})
+export class BooksModule {}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="truemejora-de-la-configuraci-n-del-uso-del-orm"><a class="anchor" href="#truemejora-de-la-configuraci-n-del-uso-del-orm"></a>10.9. Mejora de la configuración del uso del ORM</h3>
+<div class="paragraph">
+<p>Archivo <code>.env</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-env" data-lang="env">TUTORIAL_HOST=localhost
+TUTORIAL_PORT=3306
+TUTORIAL_USER=root
+TUTORIAL_PASSWORD=secret
+TUTORIAL_DATABASE=tutorial</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Arrchivo <code>config/config.service.ts</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+
+require('dotenv').config();
+
+class ConfigService {
+  constructor(private env: { [k: string]: string | undefined }) {}
+
+  private getValue(key: string, throwOnMissing = true): string {
+    const value = this.env[key];
+    if (!value &amp;&amp; throwOnMissing) {
+      throw new Error(`config error - missing env.${key}`);
+    }
+
+    return value;
+  }
+
+  public ensureValues(keys: string[]) {
+    keys.forEach(k =&gt; this.getValue(k, true));
+    return this;
+  }
+
+  public getTypeOrmConfig(): TypeOrmModuleOptions {
+    return {
+      type: 'mysql',
+
+      host: this.getValue('TUTORIAL_HOST'),
+      port: parseInt(this.getValue('TUTORIAL_PORT')),
+      username: this.getValue('TUTORIAL_USER'),
+      password: this.getValue('TUTORIAL_PASSWORD'),
+      database: this.getValue('TUTORIAL_DATABASE'),
+
+      entities: ['dist/**/*.entity.js'],
+      synchronize: true,
+    };
+  }
+}
+
+const configService = new ConfigService(process.env).ensureValues([
+  'TUTORIAL_HOST',
+  'TUTORIAL_PORT',
+  'TUTORIAL_USER',
+  'TUTORIAL_PASSWORD',
+  'TUTORIAL_DATABASE',
+]);
+
+export { configService };</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Archivo <code>app.module.ts</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { BooksModule } from './books/books.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { configService } from './config/config/config.service';
+
+@Module({
+  imports: [
+    BooksModule,
+    TypeOrmModule.forRoot(
+      configService.getTypeOrmConfig(),
+    ),
+  ],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}</code></pre>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/MySQLPost.png" alt="MySQLPost.png">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/MySQLGet.png" alt="MySQLGet.png">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/MySQLGetOne.png" alt="MySQLGetOne.png">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/MySQLPut.png" alt="MySQLPut.png">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/MySQLDelete.png" alt="MySQLDelete.png">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/MySQLUpdated.png" alt="MySQLUpdated.png">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="truecambio-a-un-servidor-postgresql"><a class="anchor" href="#truecambio-a-un-servidor-postgresql"></a>10.10. Cambio a un servidor PostgreSQL</h3>
+<div class="paragraph">
+<p>Instalación de las dependencias</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">npm install --save pg</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Archivo <code>start-postgres.sh</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh" data-lang="sh">#!/bin/bash
+set -e
+
+SERVER="tutorial_postgres";
+PW="secret";
+DB="tutorial";
+
+echo "echo stop &amp; remove old docker [$SERVER] and starting new fresh instance of [$SERVER]"
+(docker kill $SERVER || :) &amp;&amp; \
+  (docker rm $SERVER || :) &amp;&amp; \
+  docker run --name $SERVER -e POSTGRES_PASSWORD=$PW \
+  -e PGPASSWORD=$PW \
+  -p 5432:5432 \
+  -d postgres
+
+# wait for pg to start
+echo "sleep wait for pg-server [$SERVER] to start";
+SLEEP 3;
+
+# create the db
+echo "CREATE DATABASE $DB ENCODING 'UTF-8';" | docker exec -i $SERVER psql -U postgres
+echo "\l" | docker exec -i $SERVER psql -U postgres</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Cambios a realizar:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Archivo <code>.env</code>:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">TUTORIAL_HOST=localhost
+TUTORIAL_PORT=5432 <i class="conum" data-value="1"></i><b>(1)</b>
+TUTORIAL_USER=postgres <i class="conum" data-value="2"></i><b>(2)</b>
+TUTORIAL_PASSWORD=secret
+TUTORIAL_DATABASE=tutorial</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Puerto de PostgreSQL</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Usuario de PostgreSQL</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>Archivo <code>config/config.service.ts</code></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">  public getTypeOrmConfig(): TypeOrmModuleOptions {
+    return {
+      type: 'postgres', <i class="conum" data-value="1"></i><b>(1)</b>
+
+      host: this.getValue('TUTORIAL_HOST'),
+      port: parseInt(this.getValue('TUTORIAL_PORT')),
+      username: this.getValue('TUTORIAL_USER'),
+      password: this.getValue('TUTORIAL_PASSWORD'),
+      database: this.getValue('TUTORIAL_DATABASE'),
+
+      entities: ['dist/**/*.entity.js'],
+      synchronize: true,
+    };
+  }</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Servidor de bases de datos</td>
+</tr>
+</table>
+</div>
+</li>
+</ul>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/PostgresEmpty.png" alt="PostgresEmpty.png">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/PostgresWithOne.png" alt="PostgresWithOne.png">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="trueap-ndice-a-datos-de-ejemplo"><a class="anchor" href="#trueap-ndice-a-datos-de-ejemplo"></a>Apéndice A. Datos de ejemplo</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json" data-lang="json">[
+  {
+    "title": "Una historia de España",
+    "genre": "Historia",
+    "description": "Un relato ameno, personal, a ratos irónico, pero siempre único, de nuestra accidentada historia a través de los siglos. Una obra concebida por el autor para, en palabras suyas, «divertirme, releer y disfrutar; un pretexto para mirar atrás desde los tiempos remotos hasta el presente, reflexionar un poco sobre ello y contarlo por escrito de una manera poco ortodoxa.",
+    "author": "Arturo Pérez-Reverte",
+    "publisher": "Alfaguara",
+    "pages": 256,
+    "image_url": "https://images-na.ssl-images-amazon.com/images/I/41%2B-e981m1L._SX311_BO1,204,203,200_.jpg"
+  },
+  {
+    "title": "Historia de España contada para escépticos",
+    "genre": "Historia",
+    "description": "Como escribe el autor, no pretende ser veraz, justa y desapasionada, porque ninguna historia lo es. No está hecha para halagar a reyes y gobernantes, ni pretende halagar a los banqueros, ni a la Conferencia Episcopal, ni al colectivo gay.",
+    "author": "Juan Eslava Galán",
+    "publisher": "Booket",
+    "pages": 592,
+    "image_url": "https://images-na.ssl-images-amazon.com/images/I/51IyZ5Mq8YL._SX326_BO1,204,203,200_.jpg",
+    "__v": 0
+  },
+  {
+    "title": "El enigma de la habitación 622",
+    "genre": "Ficción contemporánea",
+    "description": "Vuelve el «principito de la literatura negra contemporánea, el niño mimado de la industria literaria» (GQ): el nuevo thriller de Joël Dicker es su novela más personal. ",
+    "author": "Joël Dicker",
+    "publisher": "Alfaguara",
+    "pages": 624,
+    "image_url": "https://images-na.ssl-images-amazon.com/images/I/41KiZbwOhhL._SX315_BO1,204,203,200_.jpg"
+  }
+]</code></pre>
+</div>
+</div>
+</div>
+</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2020-07-31 08:16:55 CEST
+Last updated 2020-08-02 17:59:54 CEST
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/styles/github.min.css">

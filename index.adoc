@@ -69,6 +69,22 @@ Trabajo preliminar. Tutorial en fase de elaboración.
     You accepted the DELETE request, but it might take a long time and you're going to do it asynchronously. The client should check it later. 202 Accepted.
 
     You accepted the DELETE request, but the resource can't be removed and the URI is instead reset to a default. 205 Reset Content.
+    
+[source, ts]
+----
+  @Post()
+  @ApiOperation({ summary: 'Crear un libro' })
+  @ApiResponse({
+    status: 201,
+    description: 'Datos del libro creado',
+    type: Book,
+  })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  createBook(@Res() res, @Body() newBook: BookDto): Book {
+    return res
+      .status(HttpStatus.OK)
+      .json({ status: 200, data: this.booksService.createBook(newBook) });
+----
 
 ## ToDo
 
@@ -1161,3 +1177,481 @@ image::Compodoc-Documentacion.png[]
 
 
 Para más información sobre JSDoc, consultar la https://compodoc.app/[documentación oficial]
+
+## Creación de servicios conectados a bases de datos
+
+Hasta ahora los servicios creados se limitan a proporcionar unos datos de prueba. Su cometido hasta ahora ha sido comprobar que son alcanzables desde los endpoints definidos en la API. A continación vamos a ver cómo conectar el servicio a una base de datos MySQL.
+
+### Configuración de un servidor MySQL
+
+Para trabajar localmente con persistencia necesitamos una base de datos a la que conectarnos. Para no tener que instalar un servidor en nuestro equipo y no acoplar el desarrollo a nuestro equipo utilizaremos una https://hub.docker.com/_/mysql[imagen Docker de MySQL 5.7]. 
+
+[source, bash]
+----
+$ docker run --name tutorial_mysql -e MYSQL_ROOT_PASSWORD=secret -p 3306:3306 -d mysql:5.7 <1>
+----
+<1> Usaremos el password `secret` para la cuenta `root`
+
+Tras unos instantes (algo más si la imagen de MySQL 5.7 no está descargada en el equipo) habrá un contenedor en ejecución con el nombre `tutorial_mysql`. Iniciaremos una sesión interactiva para crear una base de datos, a la que denominaremos `tutorial`
+
+[source, bash]
+----
+$ docker exec -it tutorial_mysql bash
+root@d0512407a21d:/# mysql -u root -p
+Enter password: <1>
+...
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql>
+mysql> create database tutorial; <2>
+Query OK, 1 row affected (0.00 sec)
+----
+<1> Introducir el password `secret`
+<2> Crear la base de datos `tutorial`
+
+### TypeORM
+
+Usaremos https://typeorm.io/#/[TypeORM] para la interacción con la base de datos. Esto nos aislará del gestor de base de datos elegido y hará que podamos cambiar de gestor de bases de datos de forma muy sencilla. El desarrollo con TypeORM acelera el proceso de desarrollo modelando entidades en el código y sincronizando estos modelos en la base de datos. TypeORM actualmente ofrece soporte para varias bases de datos relacionales, como PostgreSQL, Oracle, Microsoft SQL Server, SQLite, e incluso para bases de datos NoSQL, como MongoDB.
+
+Instalaremos las dependencias en el proyecto con
+
+[source, bash]
+----
+$ npm install --save @nestjs/typeorm typeorm mysql
+----
+
+### Parámetros de la conexión a la base de datos
+
+Los parámetros de conexión a la base de datos se pueden colocar en un archivo `ormconfig.json` almacenado en la raíz del proyecto (junto al `package.json`)
+
+Archivo `ormconfig,json`
+
+[source, json]
+----
+{
+  "type": "mysql",
+  "host": "localhost",
+  "port": 3306,
+  "username": "root",
+  "password": "secret",
+  "database": "tutorial",
+  "entities": ["dist/**/*.entity.js"],
+  "synchronize": true
+}
+----
+
+### Creación de la entidad
+
+[source, ts]
+----
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+
+@Entity()
+export class Book {
+  @PrimaryGeneratedColumn() <1>
+  id: number;
+
+  @Column()
+  title: string;
+
+  @Column()
+  genre: string;
+
+  @Column('text') <2>
+  description: string;
+
+  @Column()
+  author: string;
+
+  @Column()
+  publisher: string;
+
+  @Column()
+  pages: number;
+
+  @Column()
+  image_url: string;
+}
+----
+<1> Decorador para indicar que es una clave primaria autonumérica
+<2> Decorador para permitir texto largo
+
+### Configuración de la conexión a la base de datos
+
+Habíamos definido un archivo `ormconfig.json` con los parámetros de conexión a la base de datos. Para usarmos lo haremos desde `app.module.ts` 
+
+[source, ts]
+----
+import { TypeOrmModule } from '@nestjs/typeorm';
+...
+@Module({
+  imports: [
+    TypeOrmModule.forRoot(), <1>
+    ...
+  ],
+  ....
+})
+export class AppModule {}
+----
+<1> De forma predeterminada, si no se pasa ningún argumento se buscan lo valores en `ormconfig.json` en la raíz del proyecto.
+
+.Configuración de los datos de conexión en el propio código
+****
+También se puede encontrar que los parámetros de conexión son colocados directamente como argumentos de TypeOrmModule.forRoot()
+
+[source, code]
+----
+...
+    TypeOrmModule.forRoot(
+      {
+      type: 'mysql',
+      host: 'localhost',
+      port: 3306,
+      username: 'root',
+      password: 'example',
+      database: 'my_nestjs_project',
+      entities: ['dist/**/*.entity.js'],
+      synchronize: true,
+      }
+...
+----
+
+El problema de este enfoque está en que las credenciales se adjuntarán en los commits que se hagan de este archivo. En cambio unas credenciales almacenadas en un archivo `ormconfig.json` que esté incluido en el archivo `.gitignore` no expondría los datos sensibles al hacer commit.
+****
+
+### El servicio
+
+Archivo `books/books.service.ts`
+
+[source, ts]
+----
+import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
+import { BookDto } from './book.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Book } from './book.entity';
+import { Repository } from 'typeorm';
+
+@Injectable()
+export class BooksService {
+
+  constructor(
+    @InjectRepository(Book) private booksRepository: Repository<Book>,
+  ) {}
+
+  async findAll(params): Promise<Book[]> {
+    return await this.booksRepository.find();
+  }
+
+  async findBook(bookId: string): Promise<Book> {
+    return await this.booksRepository.findOne({ where: { id: bookId } });
+  }
+
+  createBook(newBook: BookDto): Promise<Book> {
+    return this.booksRepository.save(newBook);
+  }
+
+  async deleteBook(bookId: string): Promise<any> {
+    return await this.booksRepository.delete({ id: parseInt(bookId) });
+  }
+
+  async updateBook(bookId: string, newBook: BookDto): Promise<Book> {
+    let toUpdate = await this.booksRepository.findOne(bookId);
+
+    let updated = Object.assign(toUpdate, newBook);
+
+    return this.booksRepository.save(updated);
+  }
+}
+----
+
+### El controlador
+
+Archivo `books/books.controller.ts`
+
+[source, ts]
+----
+import {
+  Controller,
+  Get,
+  Param,
+  Req,
+  Post,
+  Body,
+  Delete,
+  Put,
+} from '@nestjs/common';
+import { BooksService } from './books.service';
+import { Request } from 'express';
+import { BookDto } from './book.dto';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Book } from './book.entity'; <1>
+
+@Controller('books')
+export class BooksController {
+
+  constructor(private booksService: BooksService) {}
+
+  @Get()
+  findAll(@Req() request: Request): Promise<Book[]> {
+    console.log(request.query);
+    return this.booksService.findAll(request.query);
+  }
+
+  @Get(':bookId')
+  findBook(@Param('bookId') bookId: string): Promise<Book> {
+    return this.booksService.findBook(bookId);
+  }
+
+  @Post()
+  createBook(@Body() newBook: BookDto): Promise<Book> {
+    return this.booksService.createBook(newBook);
+  }
+
+  @Delete(':bookId')
+  deleteBook(@Param('bookId') bookId: string): Promise<Book> {
+    return this.booksService.deleteBook(bookId);
+  }
+
+
+  @Put(':bookId')
+  updateBook(
+    @Param('bookId') bookId: string,
+    @Body() newBook: BookDto,
+  ): Promise<Book> {
+    return this.booksService.updateBook(bookId, newBook);
+  }
+}
+----
+<1> El tipo de la interfaz y el de la entidad coinciden. Nos quedamos con el de la entidad.
+
+### Módulo para una mejor organización
+
+Archivo `books/books.module.ts`
+
+[source, ts]
+----
+import { Module } from '@nestjs/common';
+import { Book } from './book.entity';
+import { BooksService } from './books.service';
+import { BooksController } from './books.controller';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([Book])],
+  providers: [BooksService],
+  controllers: [BooksController],
+})
+export class BooksModule {}
+----
+
+### Mejora de la configuración del uso del ORM 
+
+Archivo `.env`
+
+[source, env]
+----
+TUTORIAL_HOST=localhost
+TUTORIAL_PORT=3306
+TUTORIAL_USER=root
+TUTORIAL_PASSWORD=secret
+TUTORIAL_DATABASE=tutorial
+----
+
+Arrchivo `config/config.service.ts`
+
+[source, ts]
+----
+import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+
+require('dotenv').config();
+
+class ConfigService {
+  constructor(private env: { [k: string]: string | undefined }) {}
+
+  private getValue(key: string, throwOnMissing = true): string {
+    const value = this.env[key];
+    if (!value && throwOnMissing) {
+      throw new Error(`config error - missing env.${key}`);
+    }
+
+    return value;
+  }
+
+  public ensureValues(keys: string[]) {
+    keys.forEach(k => this.getValue(k, true));
+    return this;
+  }
+
+  public getTypeOrmConfig(): TypeOrmModuleOptions {
+    return {
+      type: 'mysql',
+
+      host: this.getValue('TUTORIAL_HOST'),
+      port: parseInt(this.getValue('TUTORIAL_PORT')),
+      username: this.getValue('TUTORIAL_USER'),
+      password: this.getValue('TUTORIAL_PASSWORD'),
+      database: this.getValue('TUTORIAL_DATABASE'),
+
+      entities: ['dist/**/*.entity.js'],
+      synchronize: true,
+    };
+  }
+}
+
+const configService = new ConfigService(process.env).ensureValues([
+  'TUTORIAL_HOST',
+  'TUTORIAL_PORT',
+  'TUTORIAL_USER',
+  'TUTORIAL_PASSWORD',
+  'TUTORIAL_DATABASE',
+]);
+
+export { configService };
+----
+
+Archivo `app.module.ts`
+
+[source, ts]
+----
+import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { BooksModule } from './books/books.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { configService } from './config/config/config.service';
+
+@Module({
+  imports: [
+    BooksModule,
+    TypeOrmModule.forRoot(
+      configService.getTypeOrmConfig(),
+    ),
+  ],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}
+----
+
+image::MySQLPost.png[]
+image::MySQLGet.png[]
+image::MySQLGetOne.png[]
+image::MySQLPut.png[]
+image::MySQLDelete.png[]
+image::MySQLUpdated.png[]
+
+
+### Cambio a un servidor PostgreSQL
+
+Instalación de las dependencias
+
+[source, bash]
+----
+npm install --save pg
+----
+
+Archivo `start-postgres.sh`
+
+[source, sh]
+----
+
+#!/bin/bash
+set -e
+
+SERVER="tutorial_postgres";
+PW="secret";
+DB="tutorial";
+
+echo "echo stop & remove old docker [$SERVER] and starting new fresh instance of [$SERVER]"
+(docker kill $SERVER || :) && \
+  (docker rm $SERVER || :) && \
+  docker run --name $SERVER -e POSTGRES_PASSWORD=$PW \
+  -e PGPASSWORD=$PW \
+  -p 5432:5432 \
+  -d postgres
+
+# wait for pg to start
+echo "sleep wait for pg-server [$SERVER] to start";
+SLEEP 3;
+
+# create the db 
+echo "CREATE DATABASE $DB ENCODING 'UTF-8';" | docker exec -i $SERVER psql -U postgres
+echo "\l" | docker exec -i $SERVER psql -U postgres
+----
+
+Cambios a realizar:
+
+* Archivo `.env`:
++
+[source, bash]
+----
+TUTORIAL_HOST=localhost
+TUTORIAL_PORT=5432 <1>
+TUTORIAL_USER=postgres <2>
+TUTORIAL_PASSWORD=secret
+TUTORIAL_DATABASE=tutorial
+----
+<1> Puerto de PostgreSQL
+<2> Usuario de PostgreSQL
+
+* Archivo `config/config.service.ts`
++
+[source, ts]
+----
+  public getTypeOrmConfig(): TypeOrmModuleOptions {
+    return {
+      type: 'postgres', <1>
+
+      host: this.getValue('TUTORIAL_HOST'),
+      port: parseInt(this.getValue('TUTORIAL_PORT')),
+      username: this.getValue('TUTORIAL_USER'),
+      password: this.getValue('TUTORIAL_PASSWORD'),
+      database: this.getValue('TUTORIAL_DATABASE'),
+
+      entities: ['dist/**/*.entity.js'],
+      synchronize: true,
+    };
+  }
+----
+<1> Servidor de bases de datos
+
+image::PostgresEmpty.png[]
+image::PostgresWithOne.png[]
+
+:numbered!: 
+
+## Apéndice A. Datos de ejemplo
+
+[source, json]
+----
+[
+  {
+    "title": "Una historia de España",
+    "genre": "Historia",
+    "description": "Un relato ameno, personal, a ratos irónico, pero siempre único, de nuestra accidentada historia a través de los siglos. Una obra concebida por el autor para, en palabras suyas, «divertirme, releer y disfrutar; un pretexto para mirar atrás desde los tiempos remotos hasta el presente, reflexionar un poco sobre ello y contarlo por escrito de una manera poco ortodoxa.",
+    "author": "Arturo Pérez-Reverte",
+    "publisher": "Alfaguara",
+    "pages": 256,
+    "image_url": "https://images-na.ssl-images-amazon.com/images/I/41%2B-e981m1L._SX311_BO1,204,203,200_.jpg"
+  },
+  {
+    "title": "Historia de España contada para escépticos",
+    "genre": "Historia",
+    "description": "Como escribe el autor, no pretende ser veraz, justa y desapasionada, porque ninguna historia lo es. No está hecha para halagar a reyes y gobernantes, ni pretende halagar a los banqueros, ni a la Conferencia Episcopal, ni al colectivo gay.",
+    "author": "Juan Eslava Galán",
+    "publisher": "Booket",
+    "pages": 592,
+    "image_url": "https://images-na.ssl-images-amazon.com/images/I/51IyZ5Mq8YL._SX326_BO1,204,203,200_.jpg",
+    "__v": 0
+  },
+  {
+    "title": "El enigma de la habitación 622",
+    "genre": "Ficción contemporánea",
+    "description": "Vuelve el «principito de la literatura negra contemporánea, el niño mimado de la industria literaria» (GQ): el nuevo thriller de Joël Dicker es su novela más personal. ",
+    "author": "Joël Dicker",
+    "publisher": "Alfaguara",
+    "pages": 624,
+    "image_url": "https://images-na.ssl-images-amazon.com/images/I/41KiZbwOhhL._SX315_BO1,204,203,200_.jpg"
+  }
+]
+----
