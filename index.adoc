@@ -961,11 +961,769 @@ export class BooksController {
 }
 ----
 
+## Creación de servicios conectados a bases de datos
+
+Hasta ahora, los servicios que hemos creado en este tutorial se limitan a proporcionar unos datos de prueba generando una salida por la consola. Su cometido se ha estado limitando a comprobar que son alcanzables desde los endpoints definidos en la API, mostrándonos simplemente el eco de su llamada. En este apartado vamos a ver cómo conectar el servicio a bases de datos. Primero lo haremos conectando los servicios a una base de datos MySQL y luego comprobaremos lo fácil que es pasarlo a una base de datos PostgreSQL.
+
+### Configuración de un servidor MySQL
+
+Para trabajar localmente con persistencia necesitamos una base de datos a la que conectarnos. Para no tener que complicarnos con instalaciones y no acoplar el desarrollo a nuestro equipo utilizaremos una https://hub.docker.com/_/mysql[imagen Docker de MySQL 5.7]. Crearemos una base de datos denominada `tutorial`. Usaremos las cuenta `root` con el password `secret`
+
+[source, bash]
+----
+$ docker run --name tutorial_mysql -e MYSQL_ROOT_PASSWORD=secret -p 3306:3306 -d mysql:5.7 <1>
+----
+<1> Usaremos el password `secret` para la cuenta `root`
+
+Tras unos instantes (algo más si la imagen de MySQL 5.7 no está descargada en el equipo) habrá un contenedor en ejecución con el nombre `tutorial_mysql`. Iniciaremos una sesión interactiva para crear una base de datos, a la que denominaremos `tutorial`
+
+[source, bash]
+----
+$ docker exec -it tutorial_mysql bash
+root@d0512407a21d:/# mysql -u root -p
+Enter password: <1>
+...
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql>
+mysql> create database tutorial; <2>
+Query OK, 1 row affected (0.00 sec)
+----
+<1> Introducir el password `secret`
+<2> Crear la base de datos `tutorial`
+
+### ORM y el patrón de repositorio
+
+Un ORM nos abstrae del acceso a un gestor de bases de datos específico. Esto nos aisla del gestor de base de datos elegido y hace que podamos cambiar de gestor de bases de datos de forma muy sencilla. https://typeorm.io/#/[TypeORM] es un ORM para TypeScript y JavaScript que facilita la interacción con la base de datos. El uso de TypeORM acelera el proceso de desarrollo modelando entidades en el código y sincronizando estos modelos con la base de datos. Actualmente TypeORM ofrece soporte para varias bases de datos relacionales, como PostgreSQL, Oracle, Microsoft SQL Server, SQLite, e incluso para bases de datos NoSQL, como MongoDB.
+
+Por otro lado, el http://blog.sapiensworks.com/post/2012/02/22/The-Repository-Pattern-Explained.aspx[patrón de repositorio] nos abstrae de los detalles de la persistencia proporcionando métodos abstractos para las operaciones comunes (crear, guardar, buscar, buscar una, actualizar, eliminar, ...).
+
+Resumiendo, el ORM trabaja con objetos de la base de datos y el repositorio trabaja con objetos del dominio.
+
+Instalaremos los paquetes de TypeORM en el proyecto con
+
+[source, bash]
+----
+$ npm install --save @nestjs/typeorm typeorm mysql
+----
+
+### Configuración de la conexión a la base de datos
+
+Haremos la configuración de la base de datos en el archivo `app.module.ts` mediante `TypeOrmModule.forRoot()`. Se le pueden pasar los parámetros de configuración directamente. Sin embargo, existe otra opción que consiste en definir la configuración en un archivo `ormconfig.json`, que es el que de forma predeterminada busca TypeORM.  
+
+[source, ts]
+----
+import { TypeOrmModule } from '@nestjs/typeorm';
+...
+@Module({
+  imports: [
+    TypeOrmModule.forRoot(), <1>
+    ...
+  ],
+  ....
+})
+export class AppModule {}
+----
+<1> De forma predeterminada, si no se pasa ningún argumento se buscan los valores en `ormconfig.json` en la raíz del proyecto.
+
+A continuación se muestra el archivo `ormconfig.json`. Este archivo se almacena en la raíz del proyecto, junto al `package.json`.
+
+Archivo `ormconfig,json`
+
+[source, json]
+----
+{
+  "type": "mysql",
+  "host": "localhost",
+  "port": 3306,
+  "username": "root",
+  "password": "secret",
+  "database": "tutorial",
+  "entities": ["dist/**/*.entity.js"], <1>
+  "synchronize": true <2>
+}
+----
+<1> Dónde localizar los archivos de las entidades
+<2> Sincronización automática de la base de datos con las entidades
+
+.Configuración de los datos de conexión en el propio código
+****
+También se puede encontrar que los parámetros de conexión son colocados directamente como argumentos de `TypeOrmModule.forRoot()`.
+
+[source, code]
+----
+...
+    TypeOrmModule.forRoot(
+      {
+      type: 'mysql',
+      host: 'localhost',
+      port: 3306,
+      username: 'root',
+      password: 'example',
+      database: 'my_nestjs_project',
+      entities: ['dist/**/*.entity.js'],
+      synchronize: true,
+      }
+...
+----
+
+El problema de este enfoque está en que las credenciales se adjuntarán en los commits que se hagan de este archivo. En cambio, si almacenamos las credenciales en un archivo `ormconfig.json` y lo incluimos en el archivo `.gitignore`, los datos sensibles almacenados en `ormconfig.json` no serán expuestos al hacer commit.
+****
+
+### Creación de entidades
+
+Las entidades son clases que se corresponden con tablas de la base de datos (colecciones si se trata de MongoDB). En las entidades se definen las columnas y relaciones. Una de esas columnas debe ser la clave primaria.
+
+A continuación, para nuestro ejemplo de libros se muestra la definición de una entidad `Book` con las columnas siguientes:
+
+* `id`
+* `title`
+* `genre`
+* `description`
+* `author`
+* `publisher`
+* `pages`
+* `image_url`
+
+Archivo `books/book.entity.ts`
+
+[source, ts]
+----
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+
+@Entity()
+export class Book {
+  @PrimaryGeneratedColumn() <1>
+  id: number;
+
+  @Column()
+  title: string;
+
+  @Column()
+  genre: string;
+
+  @Column('text') <2>
+  description: string;
+
+  @Column()
+  author: string;
+
+  @Column()
+  publisher: string;
+
+  @Column()
+  pages: number;
+
+  @Column()
+  image_url: string;
+}
+----
+<1> Decorador para indicar que es una clave primaria autonumérica
+<2> Decorador para permitir texto largo
+
+### El servicio
+
+El servicio implementa las funciones habituales para operaciones CRUD (find, findOne, create, delete y update). Se usa el patrón repositorio para trabajar directamente sobre objetos del dominio (libros en nuestro caso) y olvidarnos de los detalles de la persistencia. Como todas las funciones interactúan con bases de datos, todas se programan de forma asíncrona y devuelven una promesa, por lo que habrá que llamarlas con `await`.
+
+.Promesas, `async` y `await`
+****
+Cuando trabajamos con bases de datos las respuestas no son inmediatas. En JavaScript las https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/Objetos_globales/Promise[promesas] representan valores que pueden estar disponibles ahora, en el futuro o nunca. Para facilitar el trabajo con la programación asíncrona surge la pareja `async/await`. Con esta pareja:
+
+* Las funciones son definidas con `async` para indicar que devuelven una promesa.
+* Con `await` indicamos a JavaScript que espere hasta que la promesa se cumpla y devuelva su resultado.
+
+[NOTE]
+====
+`await` sólo funciona en funciones `async`. Se coloca en funciones `async` basadas en promesas para detener la ejecución hasta que se cumpla la promesa.
+====
+
+****
+
+Archivo `books/books.service.ts`
+
+[source, ts]
+----
+import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
+import { BookDto } from './book.dto'; <1>
+import { Book } from './book.entity'; <2>
+import { InjectRepository } from '@nestjs/typeorm'; <3>
+import { Repository } from 'typeorm'; <4>
+
+@Injectable()
+export class BooksService {
+
+  constructor(
+    @InjectRepository(Book) private booksRepository: Repository<Book>, <5>
+  ) {}
+
+  async findAll(params): Promise<Book[]> { <6>
+    return await this.booksRepository.find(); <7>
+  }
+
+  async findBook(bookId: string): Promise<Book> {
+    return await this.booksRepository.findOne({ where: { id: bookId } }); <8>
+  }
+
+  createBook(newBook: BookDto): Promise<Book> {
+    return this.booksRepository.save(newBook);
+  }
+
+  async deleteBook(bookId: string): Promise<any> {
+    return await this.booksRepository.delete({ id: parseInt(bookId) });
+  }
+
+  async updateBook(bookId: string, newBook: BookDto): Promise<Book> { <9>
+    let toUpdate = await this.booksRepository.findOne(bookId); <10>
+
+    let updated = Object.assign(toUpdate, newBook); <11>
+
+    return this.booksRepository.save(updated); <12>
+  }
+}
+----
+<1> Estructura de un libro para insertar (tiene todo menos el `id`, que se genera en la base de datos)
+<2> Estructura completa de un libro (incluye el `id`)
+<3> Decorador para inyectar repositorios
+<4> Repositorio de TypeORM
+<5> Uso del decorador `@InjectRepository` en el constructor para inyectar el `Repository` que manejará a la entidad `Book`
+<6> Las funciones del servicio se basan en funciones asíncronas del repositorio, que devuelven promesas y tendrán que ser llamadas con `await`. Por tanto, las funciones del servicio son `async` y devuelven promesas personalizadas al tipo con el que trabajan (libros, arrays de libros, ...)
+<7> La llamada a los métodos del repositorio devuelven promesas, por lo que llamaremos con `await` para esperar a que se resuelvan
+<8> Los parámetros en TypeORM se suelen pasar en JSON
+<9> La actualización se implementa como la recuperación del libro a modificar, la sustitución de todos sus valores excepto el `id` por los del libro pasado como parámetro y su posterior almacenamiento en la base de datos
+<10> Recuperación del libro a modificar
+<11> Asignación de todas las propiedades del libro _nuevo_ al libro _antiguo_, excepto el `id`, que no está incluida en el libro _nuevo_
+<12> Almacenamiento del libro en la base de datos tras su modificación
+
+### El controlador
+
+Básicamente, el controlador es el mismo que teníamos para el mockup salvo que ahora devuelve promesas, ya que las funciones del servicio ahora devuelven promesas. Además, se cambia el tipo del objeto libro. Dejamos de usar la `interface` para pasar a usar la `entity` del ORM.
+
+Archivo `books/books.controller.ts`
+
+[source, ts]
+----
+import {
+  Controller,
+  Get,
+  Param,
+  Req,
+  Post,
+  Body,
+  Delete,
+  Put,
+} from '@nestjs/common';
+import { BooksService } from './books.service';
+import { Request } from 'express';
+import { BookDto } from './book.dto';
+import { Book } from './book.entity'; <1>
+
+@Controller('books')
+export class BooksController {
+
+  constructor(private booksService: BooksService) {}
+
+  @Get()
+  findAll(@Req() request: Request): Promise<Book[]> { <2>
+    console.log(request.query);
+    return this.booksService.findAll(request.query);
+  }
+
+  @Get(':bookId')
+  findBook(@Param('bookId') bookId: string): Promise<Book> {
+    return this.booksService.findBook(bookId);
+  }
+
+  @Post()
+  createBook(@Body() newBook: BookDto): Promise<Book> { <3>
+    return this.booksService.createBook(newBook);
+  }
+
+  @Delete(':bookId')
+  deleteBook(@Param('bookId') bookId: string): Promise<Book> {
+    return this.booksService.deleteBook(bookId);
+  }
+
+
+  @Put(':bookId')
+  updateBook(
+    @Param('bookId') bookId: string,
+    @Body() newBook: BookDto, <4>
+  ): Promise<Book> {
+    return this.booksService.updateBook(bookId, newBook);
+  }
+}
+----
+<1> El tipo de la interfaz y el de la entidad coinciden. Nos quedamos con el de la entidad.
+<2> Las funciones ahora devuelven promesas basadas en la `entity`
+<3> Cambiamos el tipo `any` del `body` por el tipo del DTO del libro a crear
+<4> Cambiamos el tipo `any` del `body` por el tipo del DTO del libro actualizado
+
+### Módulo para una mejor organización
+
+Es buena práctica que en lugar de añadir cada uno de los _providers_ y los _controllers_ a `app.module.ts`, los agrupemos cada uno en un módulo con los _providers_ y _controllers_. Posteriormente, ese módulo se importa en el array `imports` de `app.module.ts`. Además, las entidades se colocan en el módulo en un array, como argumento de `TypeOrmModule.forFeature()`.
+
+Archivo `books/books.module.ts`
+
+[source, ts]
+----
+import { Module } from '@nestjs/common';
+import { Book } from './book.entity';
+import { BooksService } from './books.service';
+import { BooksController } from './books.controller';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([Book])], <1>
+  providers: [BooksService], <2>
+  controllers: [BooksController], <3>
+})
+export class BooksModule {}
+----
+<1> Las entidades van aquí
+<2> El servicio
+<3> El controlador
+
+Este archivo ya está preparado para ser colocado en el array `imports` de `app.module.ts`.
+
+### Mejora de la configuración del uso del ORM 
+
+Otra mejora que podríamos realizar para la configuración del uso del ORM podría ser el uso de variables de entorno. Esto evita la introducción de valores sensibles en el código, como contraseñas, usuarios de la base de datos, y demás.
+
+La mejora que haremos se basará en lo siguiente:
+
+. Inicialización de un archivo de variables de entorno.
+. Creación de un servicio de configuración del ORM a partir de los valores de las variables de entorno.
+. Modificación del archivo `app.module.ts` para usar la configuración anterior y cargar los módulos correspondientes (p.e. el de `BooksModule` creado antes).
+
+#### Inicialización de un archivo de variables de entorno
+
+Archivo `.env`
+
+[source, env]
+----
+TUTORIAL_HOST=localhost
+TUTORIAL_PORT=3306
+TUTORIAL_USER=root
+TUTORIAL_PASSWORD=secret
+TUTORIAL_DATABASE=tutorial
+----
+
+#### Creación de un servicio de configuración del ORM
+
+Definiremos un servicio de configuración que acceda a las variables de entorno, especifique las variables de entorno que hay que configurar y una función que las configure. +
+
+
+[NOTE]
+====
+Se trata de un código precocinado que utilizaríamos en cada proyecto con TypeORM. Sólo hay que cambiar el tipo de gestor de base de datos que se va a usar (`mysql`, `postgres`, ...). Actualmente, tiene que estar en el código y no se puede pasar en una variable.
+====
+
+Archivo `config/config.service.ts`
+
+[source, ts]
+----
+import { TypeOrmModuleOptions } from '@nestjs/typeorm'; <1>
+
+require('dotenv').config();
+
+class ConfigService {
+  constructor(private env: { [k: string]: string | undefined }) {}
+
+  private getValue(key: string, throwOnMissing = true): string {
+    const value = this.env[key];
+    if (!value && throwOnMissing) {
+      throw new Error(`config error - missing env.${key}`);
+    }
+
+    return value;
+  }
+
+  public ensureValues(keys: string[]) {
+    keys.forEach(k => this.getValue(k, true));
+    return this;
+  }
+
+  public getTypeOrmConfig(): TypeOrmModuleOptions { <2>
+    return {
+      type: 'mysql', <3>
+
+      host: this.getValue('TUTORIAL_HOST'), <4>
+      port: parseInt(this.getValue('TUTORIAL_PORT')),
+      username: this.getValue('TUTORIAL_USER'),
+      password: this.getValue('TUTORIAL_PASSWORD'),
+      database: this.getValue('TUTORIAL_DATABASE'),
+
+      entities: ['dist/**/*.entity.js'], <5>
+      synchronize: true, <6>
+    };
+  }
+}
+
+const configService = new ConfigService(process.env).ensureValues([
+  'TUTORIAL_HOST',
+  'TUTORIAL_PORT',
+  'TUTORIAL_USER',
+  'TUTORIAL_PASSWORD',
+  'TUTORIAL_DATABASE',
+]);
+
+export { configService };
+----
+<1> Importación del módulo de configuración de TypeORM
+<2> Función que configura las opciones de TypeORM 
+<3> Configuración del gestor de base de datos a usar
+<4> Configuración de valores mediante variables de entorno
+<5> Especificación del directorio de entidades
+<6> Actualización de las tablas ante cambios en las entidades
+
+#### Actualización de `app.module.ts` para cargar la configuración del ORM y los módulos
+
+Por último, modificamos el archivo `app.module.ts` para usar la configuración anterior y cargar el módulo `BooksModule`, que define su _provider_, controlador y la entidad contra la que se mapea.
+
+Archivo `app.module.ts`
+
+[source, ts]
+----
+import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { BooksModule } from './books/books.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { configService } from './config/config/config.service';
+
+@Module({
+  imports: [
+    BooksModule, <1>
+    TypeOrmModule.forRoot( <2>
+      configService.getTypeOrmConfig(),
+    ),
+  ],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}
+----
+<1> Importación del módulo
+<2> Configuración de los valores de TypeORM
+
+### Pruebas de los endpoints con persistencia en la base de datos
+ 
+En el <<Apéndice A. Datos de ejemplo>> podemos encontrar datos para insertar en la base de datos. Se podrían como `body` en un método `POST` para su creación o `PUT` para su modificación.
+
+Usaremos Postman para mostrar los resultados de utilizar los distintos endpoints implementados.
+
+La figura siguiente muestra la creación de un libro. El libro nuevo se pasa en el `body`. Se devuelve el libro insertado, junto al `id` generado en la base de datos. El endpoint usado es `/api/v1/books` con el método `POST`.
+
+image::MySQLPost.png[]
+
+Tras insertar todos los libros del <<Apéndice A. Datos de ejemplo>>, la figura siguiente muestra el listado de todos libros. El endpoint usado es `/api/v1/books` con el método `GET`.
+
+image::MySQLGet.png[]
+
+La figura siguiente muestra los detalles de un libro concreto (el 2). El endpoint usado es `/api/v1/books/2` con el método `GET`.
+
+image::MySQLGetOne.png[]
+
+La figura siguiente muestra la modificación de un libro. El `id` del libro a modificar se pasa como parámetro en la ruta y los datos del libro con sus modificaciones se pasan en el `body`. Se devuelve el libro modificado. El ejemplo muestra el cambio del número de páginas del libro 2 al valor 544. El endpoint usado es `/api/v1/books/2` con el método `PUT`.
+
+image::MySQLPut.png[]
+
+La figura siguiente muestra la eliminación de un libro. El `id` del libro a eliminar se pasa como parámetro en la ruta. Se devuelve un JSON con los libros eliminados (`affected`). Por ejemplo, para eliminar el libro con `id 3` usaríamos el endpoint `/api/v1/books/3` con el método `DELETE`.
+
+image::MySQLDelete.png[]
+
+Si ahora volvemos a consultar todos los libros se verán los cambios en el número de páginas del libro 2 y que el libro 3 ha sido eliminado. 
+
+image::MySQLUpdated.png[]
+
+### Cambio a un servidor PostgreSQL
+
+El cambio a un nuevo servidor de bases de datos es bastante sencillo. Se tendrían que seguir estos pasos:
+
+. Instalación de los paquetes del nuevo gestor de bases de datos
+. Cambiar las variables de entorno con los nuevos valores de conexión a la base de datos
+. Cambio del tipo de base de datos en TypeORM
+
+#### Instalación de los paquetes de PostgreSQL
+
+[source, bash]
+----
+npm install --save pg
+----
+
+.Creación de un contenedor con PostgreSQL
+****
+Para facilitar la configuración de la base de datos, el script siguiente lanza un contenedor PostgreSQL y crea una base de datos `tutorial` con el password `secret` (los mismos datos que se usaron para el ejemplo con MySQL)
+
+Archivo `start-postgres.sh`
+
+[source, sh]
+----
+
+#!/bin/bash
+set -e
+
+SERVER="tutorial_postgres";
+PW="secret";
+DB="tutorial";
+
+echo "echo stop & remove old docker [$SERVER] and starting new fresh instance of [$SERVER]"
+(docker kill $SERVER || :) && \
+  (docker rm $SERVER || :) && \
+  docker run --name $SERVER -e POSTGRES_PASSWORD=$PW \
+  -e PGPASSWORD=$PW \
+  -p 5432:5432 \
+  -d postgres
+
+# wait for pg to start
+echo "sleep wait for pg-server [$SERVER] to start";
+SLEEP 3;
+
+# create the db 
+echo "CREATE DATABASE $DB ENCODING 'UTF-8';" | docker exec -i $SERVER psql -U postgres
+echo "\l" | docker exec -i $SERVER psql -U postgres
+----
+****
+
+#### Modificación de las variables de entorno
+
+Cambios a realizar: en el archivo `.env`:
+
+[source, bash]
+----
+TUTORIAL_HOST=localhost
+TUTORIAL_PORT=5432 <1>
+TUTORIAL_USER=postgres <2>
+TUTORIAL_PASSWORD=secret
+TUTORIAL_DATABASE=tutorial
+----
+<1> Puerto de PostgreSQL
+<2> Usuario de PostgreSQL
+
+#### Modificación del tipo de gestor de bases de datos
+
+Archivo `config/config.service.ts`
+
+[source, ts]
+----
+  public getTypeOrmConfig(): TypeOrmModuleOptions {
+    return {
+      type: 'postgres', <1>
+
+      host: this.getValue('TUTORIAL_HOST'),
+      port: parseInt(this.getValue('TUTORIAL_PORT')),
+      username: this.getValue('TUTORIAL_USER'),
+      password: this.getValue('TUTORIAL_PASSWORD'),
+      database: this.getValue('TUTORIAL_DATABASE'),
+
+      entities: ['dist/**/*.entity.js'],
+      synchronize: true,
+    };
+  }
+----
+<1> Servidor de bases de datos
+
+Si ahora pedimos que nos devuelva todos los libros con el endpoint `/api/v1/books` y un método `GET` obtendremos una lista vacía, ya que partimos de una base de datos Postgres vacía.
+
+image::PostgresEmpty.png[]
+
+Tras introducir un nuevo libro y volver a consultar los libros vemos cómo se recuperan los datos sin problema, confirmándose lo sencillo que es cambiar de gestor de bases de datos si se usa un ORM.
+
+image::PostgresWithOne.png[]
+
+## Autenticación con JSON Web Tokens
+
+Queremos restringir el acceso a los endpoints de la aplicación de forma que sólo tengan acceso los usuarios autenticados. Pero no queremos que se tengan que autenticar para cada petición. Necesitamos una forma que permita a los usuarios indicar que tienen una sesión iniciada válida.
+
+Una forma sencilla de hacer esto es mediante JWT. En nuestro caso, ya partimos de un servidor de autorización que genera tokens de acceso a partir de usuario y contraseña. En este tutorial sólo añadiremos a la aplicación la parte de comprobación de la validez de los tokens y la restricción del acceso a los endpoints para tokens válidos.
+
+.JWT (JSON Web Tokens)
+****
+JWT es un estándar que define un método compacto y autocontenido que permite compartir de forma segura entre dos partes aserciones (claims) sobre una entidad (subject). Los datos están codificados en formato JSON incluidos en un _payload_ o cuerpo del mensaje y están firmados digitalmente.
+
+De forma predeterminada, los tokens no están cifrados. La cadena del token es una serializalización en Base64 que se puede https://jwt.io/[decodificar fácilmente]. La cadena del token está formada por tres partes:
+
+* Cabecera: Indica algoritmo (p.e. `HS256`) y tipo de token (p.e. `jwt`)
+* Payload o cuerpo: Aparecen todos los datos que queremos añadir
+* Firma: Permite verificar si el token es válido
+
+[NOTE]
+====
+La firma del token se crea de forma que se pueda verificar si el remitente es quien dice ser. Dado que el token es una cadena fácilmente descifrable, si alguien manipula el token incluyendo datos o modificando el _payload_ se verificaría que la firma del token no es correcta y no se puede confiar en el token recibido
+====
+
+[TIP]
+====
+Es conveniente incluir en el token una fecha de caducidad. Un token firmado es válido mientras no se haya superado su fecha de caducidad. Así, si alguien intercepta un token, sólo podrá usarlo mientras no caduque. Una fecha de caducidad corta no expondrá los recursos protegidos de la misma forma que si se intercepta una contraseña, que dejará los recursos expuestos mientras no se detecte la pérdida de la contraseña y no se cambie.
+====
+****
+
+Instalaremos los paquetes siguientes:
+
+[source, bash]
+----
+$ npm install @nestjs/jwt passport passport-jwt @nestjs/passport
+----
+
+El JWT se enviará en la cabecera como `Bearer Token`.
+
+[NOTE]
+====
+_Bearer Token_ o token de autorización es un https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication[esquema de autenticación HTTP]. El método de autenticación _Bearer_ debe entenderse como "dale acceso al portador (_bearer_) de este token".
+====
+
+Además, necesitaremos una _estrategia_ `Passport` para la validación del token y configurar la clave secreta que se usó para firmar el token.
+
+.Passport y estrategias Passport
+****
+http://www.passportjs.org/[Passport] es un middleware de autenticación para Node. Se usa para autenticar peticiones. Usa un mecanismo de http://www.passportjs.org/packages/[_estrategias_] para configurar la forma de autenticación (Facebook, Twitter, GitHub, Auth0, OAuth, Google, LDAP, ...). El módulo `passport-jwt` es una estrategia Passport que permite asegurar peticiones usando JWT sin sesiones.
+****
+
+Crearemos una carpeta `utilities` donde guardaremos dos archivos:
+
+* Estrategia JWT para Passport
+* Módulo de autorización para ser importado por los controladores que quieran asegurar sus endpoints
+
+### Configuración de la estrategia Passport
+
+Configuraremos JWT como estrategia Passport para la autenticación. Definiremos:
+
+* Extracción de JWT en cabecera como tipo `Bearer`
+* Clave de verificación de firma del token 
+* Función de validación del _payload_
+
+Archivo `utilities/jwt.strategy.ts`
+
+[source, ts]
+----
+import { PassportStrategy } from '@nestjs/passport';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+
+@Injectable()
+export class JwtStrategy extends PassportStrategy(Strategy) { <1>
+  constructor() {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), <2>
+      secretOrKey: 'secret', <3>
+    });
+  }
+
+  async validate(payload: any): Promise<any> { <4>
+    if (!payload) {
+      throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
+    }
+    return payload;
+  }
+}
+----
+<1> La clase extiende la estrategia de Passport
+<2> Extracción del token de la cabecera de la petición
+<3> Clave de verificación de la firma del token
+<4> Función de validación del token
+
+### Módulo de autenticación
+
+El módulo de autenticación define JWT como la estrategia Passport a usar para los que importen este módulo. Además, define una propiedad (`user`) para enviar el _payload_ del token en las peticiones.
+
+Archivo `utilities/auth.module.ts`
+
+[source, ts]
+----
+import { Module } from '@nestjs/common';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from './jwt.strategy';
+@Module({
+  imports: [
+    PassportModule.register({ <1>
+      defaultStrategy: 'jwt', <2>
+      property: 'user', <3>
+      session: false,
+    }),
+  ],
+  controllers: [],
+  providers: [JwtStrategy], <4>
+  exports: [PassportModule], <5>
+})
+export class AuthModule {}
+----
+<1> Configuración del módulo Passport
+<2> Configuración a estrategia `jwt`
+<3> Definición de propiedad `user` para el envío del _payload_ en las peticiones
+<4> _provider_ configurado en el paso anterior
+<5> Exportar el módulo ya configurado
+
+[NOTE]
+====
+El valor `jwt` definido en `defaultStrategy` se usará posteriormente a la hora de proteger los endpoints.
+====
+
+### Restricción del acceso de los endpoints
+
+Añadimos el módulo `AuthModule` definido en el paso anterior al módulo de los endpoints que queremos proteger. El módulo `AuthModule` definía la configuración de la estrategia y el servicio de validación JWT a utilizar.
+
+Archivo `books/books.module.ts`
+
+[source, ts]
+----
+...
+import { AuthModule } from '../utilities/auth.module';
+
+@Module({
+  imports: [
+    ...
+    , AuthModule], <1>
+  providers: [...],
+  controllers: [...],
+})
+
+export class BooksModule {}
+----
+<1> Importación del módulo definido
+
+Una vez definido el módulo, ya sólo falta proteger los endpoints. Podremos hacerlo de dos formas:
+
+* Proteger de una vez todos los endpoints del controlador
+* Proteger sólo los endpoints indicados
+
+La protección se hará usando el decorador `@UseGuards()`. Si el decorador se coloca antes de la definición de la clase, quedan protegidos todos los endpoints definidos en la clase. Si no se desea una protección de todos los endpoints, se colocará `@UseGuards()` antes de la definición de aquellos endpoints que se quieran proteger.
+
+A `@UseGuards()` se le pasa como argumento el nombre de estrategia de autenticación definida. En nuestro caso, la nuestra la habíamos definido como `jwt` en `Auth.module.ts`.
+
+Archivo `books.controller.ts`
+
+[source, ts]
+----
+import {
+  ...
+  UseGuards, <1>
+} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport'; <2>
+...
+@Controller('books')
+@UseGuards(AuthGuard('jwt')) <3>
+...
+export class BooksController {
+...
+}
+----
+<1> Importación del decorador `UseGuards`
+<2> Importación de `AuthGuard` para especificar la estrategia de autenticación a utilizar
+<3> Restricción del acceso a `jwt` de forma global (a nivel de clase) para todos los endpoints del controlador
+
+Si tratamos de acceder sin token o con un token inválido a cualquier endpoint definido, obtendremos un mensaje de error `401 Unauthorized`, tal y como muestra la figura.
+
+image::JWT-SinAutenticar.png[]
+
+Si pasamos en la cabecera de autorización pasamos el token indicando que es `Bearer Token` tendremos acceso a los endpoints, tal y como muestra la figura.
+
+image::JWT-Autenticado.png[]
+
 ## Documentación de la API con Swagger (OpenAPI)
 
-NestJS cuenta con un módulo que permite la generación automática de la documentación en Swagger (OpenAPI). Esto permite obtener la documentación de la API y sus endpoints mediante decoradores en el código.
+NestJS cuenta con un módulo que permite la generación automática de la documentación en https://swagger.io/[Swagger (OpenAPI)]. Esto permite obtener la documentación de la API y sus endpoints mediante decoradores en el código.
 
-Comenzaremos instalando las dependencias de Swagger en el proyecto.
+Comenzaremos instalando los paquetes de Swagger en el proyecto.
 
 ```
 $ npm install --save @nestjs/swagger swagger-ui-express
@@ -988,11 +1746,15 @@ async function bootstrap() {
     .setTitle('Bookstore REST API')
     .setDescription('API REST de Bookstore')
     .setVersion('1.0')
+    .addBearerAuth( <3>
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: 'header' },
+      'access-token', <4>
+    )
     .build();
-  const document = SwaggerModule.createDocument(app, options); <3>
+  const document = SwaggerModule.createDocument(app, options); <5>
 
   // La ruta en que se sirve la documentación
-  SwaggerModule.setup('docs', app, document); <4>
+  SwaggerModule.setup('docs', app, document); <6>
 
   await app.listen(3000);
 }
@@ -1000,17 +1762,26 @@ bootstrap();
 ----
 <1> Importaciones necesarias
 <2> Configuración de opciones generales de la documentación (título, versión, ...)
-<3> Creación de la documentación con las opciones configuradas
-<4> Especificación de la ruta relativa donde se sirve la documentación Swagger
-
-### Documentación de los DTO
-
-En la clases DTO incluiremos un decorador `@ApiProperty()` antes de cada propiedad. A este decorador se le puede pasar un ejemplo que facilite la introducción al uso de la API. 
+<3> Habilita el uso de autenticación JWT con `Bearer Token`
+<4> Nombre asignado a esta configuración de autenticación
+<5> Creación de la documentación con las opciones configuradas
+<6> Especificación de la ruta relativa donde se sirve la documentación Swagger
 
 [NOTE]
 ====
-El uso de decoradores en los DTO permite que aparezcan el tipo y un ejemplo definido siempre que use un DTO, lo que facilita bastante la interacción con la documentación.
+La configuración de `in: header` en `addBearerAuth()` permite una autenticación global asignándole un nombre (p.e. `access-token`). Si a nivel de clase se especifica `@ApiBearerAuth('access-token')` todos los endpoints quedarían autenticados tras la autenticación global. En cambio, si se opta por una autenticación individual, habría que incluir `@ApiBearerAuth('access-token')` antes de cada endpoint que quisiera usar el método de autenticación denominado `access-token`.
 ====
+
+### Documentación de DTOs, entidades, clases e interfaces
+
+En clases DTO, así como en entidades, clases e interfaces, incluiremos un decorador `@ApiProperty()` antes de cada propiedad. A este decorador se le puede pasar un ejemplo que facilite la introducción al uso de la API. 
+
+[NOTE]
+====
+El uso de decoradores en los DTO y entidades permite que aparezcan el tipo y un ejemplo definido siempre que use un DTO o una entidad, lo que facilita bastante la interacción con la documentación.
+====
+
+Archivo `books/book.dto.ts`
 
 [source, ts]
 ----
@@ -1044,49 +1815,64 @@ export class BookDto {
 <1> Importación de decoradores
 <2> Configuración de propiedades
 
-[TIP]
-====
-También hay que incluir decoradores `@ApiProperty` en interfaces y otras clases definidas para tipado.
-====
+La anotación Swagger de la entidad es prácticamente igual a la del DTO salvo que también incluye el `id`. 
 
-Archivo `books/book.class.ts`
+Archivo `books/book.entity.ts`
 
 [source, ts]
 ----
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
+
+@Entity()
 export class Book {
-  @ApiProperty({ example: 99 }) <1>
+  @ApiProperty({ example: 99 })
+  @PrimaryGeneratedColumn()
   id: number;
 
   @ApiProperty({ example: 'Don Quijote de la Mancha' })
+  @Column()
   title: string;
 
   @ApiProperty({ example: 'Novela' })
+  @Column()
   genre: string;
 
   @ApiProperty({
     example: 'Esta edición del Ingenioso hidalgo don Quijote de la Mancha ...',
   })
+  @Column('text')
   description: string;
 
   @ApiProperty({ example: 'Miguel de Cervantes' })
+  @Column()
   author: string;
 
   @ApiProperty({ example: 'Santillana' })
+  @Column()
   publisher: string;
 
   @ApiProperty({ example: 592 })
+  @Column()
   pages: number;
 
   @ApiProperty({ example: 'www.imagen.com/quijote.png' })
+  @Column()
   image_url: string;
 }
 ----
-<1> Que también se muestre el id en los ejemplos de libros completos
+
+[TIP]
+====
+También hay que incluir decoradores `@ApiProperty` en interfaces y otras clases definidas para tipado.
+====
+
 
 ### Documentación de los controladores
 
 Los métodos de los controladores se pueden agrupar mediante etiquetas Swagger. Para ello se usa el decorador `@ApiTags()`. Se puede usar el decorador a nivel de clase, lo que combinará a todos los métodos en el mismo grupo. También se puede usar a nivel de método.
+
+Si se dispone de autenticación JWT, se incluirá el decorador `@ApiBearerAuth()` con el nombre usado para denominar al método de autenticación definido. Si el decorador se usa a nivel de clase, todos los endpoints de la clase quedarán autenticados al realizar una autenticación global.
 
 En cada operación se incluirá: 
 
@@ -1098,38 +1884,94 @@ A continuación se muestra un fragmento de la anotación en `books/books.control
 [source, ts]
 ----
 ...
-import { BookDto } from './book.dto';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { BookDto } from './book.dto'; <1>
+import { Book } from './book.entity'; <2>
+import { <3>
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 ...
-@ApiTags('book') <1> 
+@ApiTags('book') <4>
 @Controller('books')
+@UseGuards(AuthGuard('jwt')) <5>
+@ApiBearerAuth('access-token') <6>
 export class BooksController {
-
-  @Post()
-  @ApiOperation({ summary: 'Crear un libro' }) <2>
-  @ApiResponse({ <3>
+...
+  /** <7>
+   *
+   * @returns {Book[]} Devuelve una lista de libros
+   * @param {Request} request Lista de parámetros para filtrar
+   */
+  @Get()
+  @ApiOperation({ summary: 'Obtener lista de libros' }) <8>
+  @ApiResponse({ <9>
     status: 201,
-    description: 'Datos del libro creado',
-    type: Book, <4>
+    description: 'Lista de libros',
+    type: Book, <10>
   })
-  @ApiResponse({ status: 403, description: 'Forbidden.' }) <5>
-  createBook(@Body() newBook: BookDto) {
-    return this.booksService.createBook(newBook);
+  findAll(@Req() request: Request): Promise<Book[]> {
+  ...
   }
 ...
 }
 ----
-<1> Especificación de la etiqueta para combinar a todos las operaciones de este controlador en el grupo `book`
-<2> Descripción de la operación
-<3> Respuesta 201
-<4> Al especificar el tipo, se puede ver un ejemplo de la respuesta en la documentación
-<5> Respuesta 403
+<1> Importación del DTO para enlazar bien la documentación
+<2> Importación de la entidad para enlazar bien la documentación
+<3> Importación de paquetes Swagger
+<4> Especificación de la etiqueta para combinar a todos las operaciones de este controlador en el grupo `book`
+<5> Protección con JWT a nivel de clase de todos los endpoints
+<6> Configuración de autenticación en Swagger a nivel de clase
+<7> Documentación del retorno y de los parámetros del endpoint
+<8> Descripción de la operación
+<9> Respuesta 201
+<10> Al especificar el tipo, se puede ver un ejemplo de la respuesta en la documentación
 
-La figura siguiente muestra cómo quedaría la documentación servida el la ruta `docs`.
+La figura siguiente muestra cómo quedaría inicialmente la documentación servida el la ruta `docs`. Como aún no se ha proporcionado el token, los endpoints aparecen con un candado abierto indicando que no se posible su acceso.
 
-image::Swagger.png[]
+image::Swagger-Inicio.png[]
+
+Si probásemos un endpoint (p.e. `GET /books` para obtener la lista de todos los libros) con `Try out` se nos rechazaría el acceso, tal y como ilustra la figura siguiente.
+
+image::Swagger-NoAutenticado.png[]
+
+Para introducir el token, pulsaremos el botón `Authorize` superior. En el cuadro de diálogo introducimos el token y pulsamos sobre `Authorize`
+
+image::Swagger-Token.png[]
+
+Si el token introducido es válido, quedaremos autorizados.
+
+image::Swagger-TokenValido.png[]
+
+Al quedar autorizados, como definimos la autenticación para todo el controlador, quedaría abierto el acceso a todos los endpoints, mostrándose ahora todos los candados cerrados.
+
+image::Swagger-Autenticado.png[]
+
+Si ahora volvemos a probar el endpoint para obtener la lista de libros, la lista se recuperará y se mostrará en el propio Swagger.
+
+image::Swagger-Respuesta.png[]
+
+Esto hace a Swagger una opción muy interesante para los proyectos de APIs ya que no sólo es una herramienta de documentación, sino que también permite la interacción directa con la API. Con una buena documentación enriquecida con la descripción de sus parámetros, tipos y ejemplos tendremos una plataforma extraordinaria para la documentación y uso de APIs.
+
+### Descarga de JSON
+
+Para generar y poder descargar un archivo Swagger JSON basta con añadir `-json` a la ruta desde la que se sirve la documentación. Este archivo podrá ser alojado en una plataforma desde la que se sirva la documentación de las APIs de la organización.
+
+En nuestro caso, `http://localhost:3001/docs-json` generará el archivo Swagger JSON de nuestra aplicación.
+
+image::Swagger-JSON.png[]
+
+[IMPORTANT]
+====
+El elemento `servers` está sin definir. De cara a subir este JSON a un servidor de Swagger, se debería configurar este elemento con el nombre DNS o IP del servidor donde se aloja la API para poder interactuar con la API.
+====
 
 Para más información sobre Swagger, consultar la  https://docs.nestjs.com/recipes/swagger[documentación oficial]
+
+## Logging
+
+ToDo
 
 ## Documentación del código
 
@@ -1177,446 +2019,6 @@ image::Compodoc-Documentacion.png[]
 
 
 Para más información sobre JSDoc, consultar la https://compodoc.app/[documentación oficial]
-
-## Creación de servicios conectados a bases de datos
-
-Hasta ahora los servicios creados se limitan a proporcionar unos datos de prueba. Su cometido hasta ahora ha sido comprobar que son alcanzables desde los endpoints definidos en la API. A continación vamos a ver cómo conectar el servicio a una base de datos MySQL.
-
-### Configuración de un servidor MySQL
-
-Para trabajar localmente con persistencia necesitamos una base de datos a la que conectarnos. Para no tener que instalar un servidor en nuestro equipo y no acoplar el desarrollo a nuestro equipo utilizaremos una https://hub.docker.com/_/mysql[imagen Docker de MySQL 5.7]. 
-
-[source, bash]
-----
-$ docker run --name tutorial_mysql -e MYSQL_ROOT_PASSWORD=secret -p 3306:3306 -d mysql:5.7 <1>
-----
-<1> Usaremos el password `secret` para la cuenta `root`
-
-Tras unos instantes (algo más si la imagen de MySQL 5.7 no está descargada en el equipo) habrá un contenedor en ejecución con el nombre `tutorial_mysql`. Iniciaremos una sesión interactiva para crear una base de datos, a la que denominaremos `tutorial`
-
-[source, bash]
-----
-$ docker exec -it tutorial_mysql bash
-root@d0512407a21d:/# mysql -u root -p
-Enter password: <1>
-...
-Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-
-mysql>
-mysql> create database tutorial; <2>
-Query OK, 1 row affected (0.00 sec)
-----
-<1> Introducir el password `secret`
-<2> Crear la base de datos `tutorial`
-
-### TypeORM
-
-Usaremos https://typeorm.io/#/[TypeORM] para la interacción con la base de datos. Esto nos aislará del gestor de base de datos elegido y hará que podamos cambiar de gestor de bases de datos de forma muy sencilla. El desarrollo con TypeORM acelera el proceso de desarrollo modelando entidades en el código y sincronizando estos modelos en la base de datos. TypeORM actualmente ofrece soporte para varias bases de datos relacionales, como PostgreSQL, Oracle, Microsoft SQL Server, SQLite, e incluso para bases de datos NoSQL, como MongoDB.
-
-Instalaremos las dependencias en el proyecto con
-
-[source, bash]
-----
-$ npm install --save @nestjs/typeorm typeorm mysql
-----
-
-### Parámetros de la conexión a la base de datos
-
-Los parámetros de conexión a la base de datos se pueden colocar en un archivo `ormconfig.json` almacenado en la raíz del proyecto (junto al `package.json`)
-
-Archivo `ormconfig,json`
-
-[source, json]
-----
-{
-  "type": "mysql",
-  "host": "localhost",
-  "port": 3306,
-  "username": "root",
-  "password": "secret",
-  "database": "tutorial",
-  "entities": ["dist/**/*.entity.js"],
-  "synchronize": true
-}
-----
-
-### Creación de la entidad
-
-[source, ts]
-----
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
-
-@Entity()
-export class Book {
-  @PrimaryGeneratedColumn() <1>
-  id: number;
-
-  @Column()
-  title: string;
-
-  @Column()
-  genre: string;
-
-  @Column('text') <2>
-  description: string;
-
-  @Column()
-  author: string;
-
-  @Column()
-  publisher: string;
-
-  @Column()
-  pages: number;
-
-  @Column()
-  image_url: string;
-}
-----
-<1> Decorador para indicar que es una clave primaria autonumérica
-<2> Decorador para permitir texto largo
-
-### Configuración de la conexión a la base de datos
-
-Habíamos definido un archivo `ormconfig.json` con los parámetros de conexión a la base de datos. Para usarmos lo haremos desde `app.module.ts` 
-
-[source, ts]
-----
-import { TypeOrmModule } from '@nestjs/typeorm';
-...
-@Module({
-  imports: [
-    TypeOrmModule.forRoot(), <1>
-    ...
-  ],
-  ....
-})
-export class AppModule {}
-----
-<1> De forma predeterminada, si no se pasa ningún argumento se buscan lo valores en `ormconfig.json` en la raíz del proyecto.
-
-.Configuración de los datos de conexión en el propio código
-****
-También se puede encontrar que los parámetros de conexión son colocados directamente como argumentos de TypeOrmModule.forRoot()
-
-[source, code]
-----
-...
-    TypeOrmModule.forRoot(
-      {
-      type: 'mysql',
-      host: 'localhost',
-      port: 3306,
-      username: 'root',
-      password: 'example',
-      database: 'my_nestjs_project',
-      entities: ['dist/**/*.entity.js'],
-      synchronize: true,
-      }
-...
-----
-
-El problema de este enfoque está en que las credenciales se adjuntarán en los commits que se hagan de este archivo. En cambio unas credenciales almacenadas en un archivo `ormconfig.json` que esté incluido en el archivo `.gitignore` no expondría los datos sensibles al hacer commit.
-****
-
-### El servicio
-
-Archivo `books/books.service.ts`
-
-[source, ts]
-----
-import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
-import { BookDto } from './book.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Book } from './book.entity';
-import { Repository } from 'typeorm';
-
-@Injectable()
-export class BooksService {
-
-  constructor(
-    @InjectRepository(Book) private booksRepository: Repository<Book>,
-  ) {}
-
-  async findAll(params): Promise<Book[]> {
-    return await this.booksRepository.find();
-  }
-
-  async findBook(bookId: string): Promise<Book> {
-    return await this.booksRepository.findOne({ where: { id: bookId } });
-  }
-
-  createBook(newBook: BookDto): Promise<Book> {
-    return this.booksRepository.save(newBook);
-  }
-
-  async deleteBook(bookId: string): Promise<any> {
-    return await this.booksRepository.delete({ id: parseInt(bookId) });
-  }
-
-  async updateBook(bookId: string, newBook: BookDto): Promise<Book> {
-    let toUpdate = await this.booksRepository.findOne(bookId);
-
-    let updated = Object.assign(toUpdate, newBook);
-
-    return this.booksRepository.save(updated);
-  }
-}
-----
-
-### El controlador
-
-Archivo `books/books.controller.ts`
-
-[source, ts]
-----
-import {
-  Controller,
-  Get,
-  Param,
-  Req,
-  Post,
-  Body,
-  Delete,
-  Put,
-} from '@nestjs/common';
-import { BooksService } from './books.service';
-import { Request } from 'express';
-import { BookDto } from './book.dto';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Book } from './book.entity'; <1>
-
-@Controller('books')
-export class BooksController {
-
-  constructor(private booksService: BooksService) {}
-
-  @Get()
-  findAll(@Req() request: Request): Promise<Book[]> {
-    console.log(request.query);
-    return this.booksService.findAll(request.query);
-  }
-
-  @Get(':bookId')
-  findBook(@Param('bookId') bookId: string): Promise<Book> {
-    return this.booksService.findBook(bookId);
-  }
-
-  @Post()
-  createBook(@Body() newBook: BookDto): Promise<Book> {
-    return this.booksService.createBook(newBook);
-  }
-
-  @Delete(':bookId')
-  deleteBook(@Param('bookId') bookId: string): Promise<Book> {
-    return this.booksService.deleteBook(bookId);
-  }
-
-
-  @Put(':bookId')
-  updateBook(
-    @Param('bookId') bookId: string,
-    @Body() newBook: BookDto,
-  ): Promise<Book> {
-    return this.booksService.updateBook(bookId, newBook);
-  }
-}
-----
-<1> El tipo de la interfaz y el de la entidad coinciden. Nos quedamos con el de la entidad.
-
-### Módulo para una mejor organización
-
-Archivo `books/books.module.ts`
-
-[source, ts]
-----
-import { Module } from '@nestjs/common';
-import { Book } from './book.entity';
-import { BooksService } from './books.service';
-import { BooksController } from './books.controller';
-import { TypeOrmModule } from '@nestjs/typeorm';
-
-@Module({
-  imports: [TypeOrmModule.forFeature([Book])],
-  providers: [BooksService],
-  controllers: [BooksController],
-})
-export class BooksModule {}
-----
-
-### Mejora de la configuración del uso del ORM 
-
-Archivo `.env`
-
-[source, env]
-----
-TUTORIAL_HOST=localhost
-TUTORIAL_PORT=3306
-TUTORIAL_USER=root
-TUTORIAL_PASSWORD=secret
-TUTORIAL_DATABASE=tutorial
-----
-
-Arrchivo `config/config.service.ts`
-
-[source, ts]
-----
-import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-
-require('dotenv').config();
-
-class ConfigService {
-  constructor(private env: { [k: string]: string | undefined }) {}
-
-  private getValue(key: string, throwOnMissing = true): string {
-    const value = this.env[key];
-    if (!value && throwOnMissing) {
-      throw new Error(`config error - missing env.${key}`);
-    }
-
-    return value;
-  }
-
-  public ensureValues(keys: string[]) {
-    keys.forEach(k => this.getValue(k, true));
-    return this;
-  }
-
-  public getTypeOrmConfig(): TypeOrmModuleOptions {
-    return {
-      type: 'mysql',
-
-      host: this.getValue('TUTORIAL_HOST'),
-      port: parseInt(this.getValue('TUTORIAL_PORT')),
-      username: this.getValue('TUTORIAL_USER'),
-      password: this.getValue('TUTORIAL_PASSWORD'),
-      database: this.getValue('TUTORIAL_DATABASE'),
-
-      entities: ['dist/**/*.entity.js'],
-      synchronize: true,
-    };
-  }
-}
-
-const configService = new ConfigService(process.env).ensureValues([
-  'TUTORIAL_HOST',
-  'TUTORIAL_PORT',
-  'TUTORIAL_USER',
-  'TUTORIAL_PASSWORD',
-  'TUTORIAL_DATABASE',
-]);
-
-export { configService };
-----
-
-Archivo `app.module.ts`
-
-[source, ts]
-----
-import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { BooksModule } from './books/books.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { configService } from './config/config/config.service';
-
-@Module({
-  imports: [
-    BooksModule,
-    TypeOrmModule.forRoot(
-      configService.getTypeOrmConfig(),
-    ),
-  ],
-  controllers: [AppController],
-  providers: [AppService],
-})
-export class AppModule {}
-----
-
-image::MySQLPost.png[]
-image::MySQLGet.png[]
-image::MySQLGetOne.png[]
-image::MySQLPut.png[]
-image::MySQLDelete.png[]
-image::MySQLUpdated.png[]
-
-
-### Cambio a un servidor PostgreSQL
-
-Instalación de las dependencias
-
-[source, bash]
-----
-npm install --save pg
-----
-
-Archivo `start-postgres.sh`
-
-[source, sh]
-----
-
-#!/bin/bash
-set -e
-
-SERVER="tutorial_postgres";
-PW="secret";
-DB="tutorial";
-
-echo "echo stop & remove old docker [$SERVER] and starting new fresh instance of [$SERVER]"
-(docker kill $SERVER || :) && \
-  (docker rm $SERVER || :) && \
-  docker run --name $SERVER -e POSTGRES_PASSWORD=$PW \
-  -e PGPASSWORD=$PW \
-  -p 5432:5432 \
-  -d postgres
-
-# wait for pg to start
-echo "sleep wait for pg-server [$SERVER] to start";
-SLEEP 3;
-
-# create the db 
-echo "CREATE DATABASE $DB ENCODING 'UTF-8';" | docker exec -i $SERVER psql -U postgres
-echo "\l" | docker exec -i $SERVER psql -U postgres
-----
-
-Cambios a realizar:
-
-* Archivo `.env`:
-+
-[source, bash]
-----
-TUTORIAL_HOST=localhost
-TUTORIAL_PORT=5432 <1>
-TUTORIAL_USER=postgres <2>
-TUTORIAL_PASSWORD=secret
-TUTORIAL_DATABASE=tutorial
-----
-<1> Puerto de PostgreSQL
-<2> Usuario de PostgreSQL
-
-* Archivo `config/config.service.ts`
-+
-[source, ts]
-----
-  public getTypeOrmConfig(): TypeOrmModuleOptions {
-    return {
-      type: 'postgres', <1>
-
-      host: this.getValue('TUTORIAL_HOST'),
-      port: parseInt(this.getValue('TUTORIAL_PORT')),
-      username: this.getValue('TUTORIAL_USER'),
-      password: this.getValue('TUTORIAL_PASSWORD'),
-      database: this.getValue('TUTORIAL_DATABASE'),
-
-      entities: ['dist/**/*.entity.js'],
-      synchronize: true,
-    };
-  }
-----
-<1> Servidor de bases de datos
-
-image::PostgresEmpty.png[]
-image::PostgresWithOne.png[]
 
 :numbered!: 
 
