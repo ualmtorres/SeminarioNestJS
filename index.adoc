@@ -27,23 +27,24 @@ image::logocloudstic.png[]
 ////
 COLOCA A CONTINUACION EL RESUMEN
 ////
-NestJS es un framework para el desearrollo de aplicaciones Node.js en el lado del servidor. Se programa en JavaScript y proporciona una arquitectura en la aplicación que permite el desarrollo de aplicaciones más fáciles de mantener. Su arquitectura está bastante inspirada en Angular lo que facilita el trabajo al equipo de desarrollo no tener que usar dos formas diferentes de trabajo en el backend y en el frontend.
+NestJS es un framework para el desearrollo de aplicaciones Node.js en el lado del servidor. Se programa en JavaScript y proporciona una arquitectura en la aplicación que permite el desarrollo de aplicaciones más fáciles de mantener. Su arquitectura está bastante inspirada en Angular lo que facilita el trabajo al equipo de desarrollo al no tener que usar dos formas diferentes de trabajo en el backend y en el frontend.
 
 
 ////
 COLOCA A CONTINUACION LOS OBJETIVOS
 ////
 .Objetivos
-* Conocer el funcionamiento de los controladores y los servicios
 * Usar el CLI de Nest para la creación de componentes de la aplicación
+* Conocer el funcionamiento de los controladores y los servicios
 * Crear los métodos básicos CRUD de una aplicación
 * Saber cómo capturar los parámetros de las peticiones HTTP
 * Conocer las diferencias y utilidades de las _entities_ de los ORM (Object Relational Mappers), las interfaces y los DTO (Data Transfer Objects)
 * Crear una API sencilla con datos mockeados
 * Crear servicios basados en bases de datos
+* Usar JWT como mecanismo de control de acceso
 * Usar Swagger para la documentación de la API
-* Usar Compodoc para la documentación de la aplicación
 * Registrar las operaciones de la aplicación en archivos de log
+* Usar Compodoc para la documentación de la aplicación
 
 [TIP]
 ====
@@ -53,46 +54,7 @@ Disponible el https://github.com/ualmtorres/tutorial-nest-js[repositorio] usado 
 // Entrar en modo numerado de apartados
 :numbered:
 
-[CAUTION]
-====
-Trabajo preliminar. Tutorial en fase de elaboración.
-====
-
-## Códigos de error
-
-**Mover esto a un anexo y ampliar**
-
-    A successful DELETE, with no further information. 204 No Content
-
-    A successful DELETE, but you have a warning about related orphan resources that should be deleted too. 200 OK.
-
-    You accepted the DELETE request, but it might take a long time and you're going to do it asynchronously. The client should check it later. 202 Accepted.
-
-    You accepted the DELETE request, but the resource can't be removed and the URI is instead reset to a default. 205 Reset Content.
-    
-[source, ts]
-----
-  @Post()
-  @ApiOperation({ summary: 'Crear un libro' })
-  @ApiResponse({
-    status: 201,
-    description: 'Datos del libro creado',
-    type: Book,
-  })
-  @ApiResponse({ status: 403, description: 'Forbidden.' })
-  createBook(@Res() res, @Body() newBook: BookDto): Book {
-    return res
-      .status(HttpStatus.OK)
-      .json({ status: 200, data: this.booksService.createBook(newBook) });
-----
-
-## ToDo
-
-### Implementación de servicios con bases de datos
-### Códigos de error y control de errores
-### Logging
-
-## Creación de proyecto
+## Creación del proyecto
 
 [source, bash]
 ----
@@ -1971,9 +1933,15 @@ Para más información sobre Swagger, consultar la  https://docs.nestjs.com/reci
 
 ## Logging
 
-A medida que las aplicaciones se complican y a medida que se les exige mayor rendimiento se vuelve más necesario contar un registro de logs que nos ayude a encontrar fallos o problemas de rendimiento. NestJS incorpora un sistema de logging que permite controlar qué mensajes se registran en el log y a dónde se dirige su salida. Sin embargo, Nest recomienda usar otros paquetes de logging más avanzados y versátiles para sistemas en producción, como https://github.com/winstonjs/winston[Winston]. Entre las características de Winston se encuentran: soporte para gran cantidad de opciones de almacenamiento, niveles de log y formateo de logs.
+A medida que las aplicaciones se complican y a medida que se les exige mayor rendimiento se vuelve más necesario contar un registro de logs que nos ayude a encontrar fallos o problemas de rendimiento. NestJS incorpora un sistema de logging que permite controlar los mensajes que se registran en el log y especificar su salida. Sin embargo, Nest recomienda usar otros paquetes de logging más avanzados y versátiles para sistemas en producción, como https://github.com/winstonjs/winston[Winston]. Entre las características de Winston se encuentran: soporte para gran cantidad de opciones de almacenamiento, niveles de log y formateo de logs.
 
 * Opciones de almacenamiento: Winston es una librería de logging que permite varios https://github.com/winstonjs/winston/blob/master/docs/transports.md#winston-core[_transportes_]. Básicamente, un transporte es un dispositivo de almacenamiento para almacenar logs. Cada instancia de un logger de Winston puede tener varios transportes configurados para niveles diferentes. Ejemplos de transportes son consola, archivo, archivos de rotación diaria, Syslog, Datadog, ElasticSearch o MongoDB.
++
+[NOTE]
+====
+Una opción de transporte centralizada, como la basada en ElasticSearch, evitaría el problema de la fragmentación de logs que se produce cuando tenemos varias copias de la aplicación (p.e. en varios contenedores), cada una con sus archivos de log independientes.
+====
+
 * Niveles: Los niveles de log indican la gravedad, que van desde una caída del sistema hasta el aviso de una función marcada como obsoleta. Los niveles de log ayudan a ver rápidamente los logs que necesitan atención. Para cada nivel se puede configurar la cantidad de datos y de detalles a registrar.
 +
 [NOTE]
@@ -1987,9 +1955,9 @@ Los niveles de log se priorizan de 0 a 5 (de mayor a menor prioridad)
 * 4: `debug`
 * 5: `silly`
 
-Al especificar un nivel de log para un transporte concreto, se registará cualquier cosa con ese nivel o con una prioridad mayor (p.e. si se especifica `info`, se registará cualquier cosa a nivel `error, warn` o `info`
+Al especificar un nivel de log para un transporte concreto, se registará cualquier cosa con ese nivel o con una prioridad mayor (p.e. si se especifica `info`, se registrará cualquier cosa al nivel `info` así como a las niveles  `warn` y `error`.
 ====
-* Formato: Winston ofrece formateo en JSON, uso de colores y manipulación de formatos porque posteriormente surgen problemas si todo son cadenas.
+* Formato: Winston ofrece formateo en JSON, uso de colores y manipulación de formatos. ya que posteriormente surgen problemas si todo son cadenas.
 
 ### Configuración de Winston
 
@@ -2000,7 +1968,7 @@ Comenzamos instalando con
 npm install --save nest-winston winston
 ----
 
-A continuación, se configuran las opciones de nivel de log, transporte y formato en `app.module.ts`. En este ejemplo se registran los logs con nivel `info` (que registrará `info, warn` y `error`). Las opciones de formato incluyen la fecha y JSON. >Como transportes, se usarán 3 archivos de logs independientes (uno para errores, otro para `debug y otro para `info`) y salida por consola para nivel `debug`.
+A continuación, se configuran las opciones de nivel de log, transporte y formato en `app.module.ts`. En este ejemplo se registran los logs con nivel `info` (que registrará `info, warn` y `error`). Las opciones de formato incluyen la fecha, la interpolación de cadenas y la salida en JSON. Como transportes, se usarán 3 archivos de logs independientes (uno para errores, otro para `debug` y otro para `info`) y salida por consola para nivel `debug`.
 
 Archivo `app.module.ts`
 
@@ -2049,10 +2017,19 @@ import * as path from 'path';
 })
 export class AppModule {}
 ----
-<1> Importaciones necesarias de Winston y paths para trata con las rutas de los archivos de log
+<1> Importaciones necesarias de Winston y paths para tratar con las rutas de los archivos de log
 <2> Configuración del nivel `info`
 <3> Formato definido para las entradas de log
 <4> Transportes: 3 archivos y salida por consola para nivel mínimo de `debug`
+
+[NOTE]
+====
+El _trasporte_ para archivos tiene otras opciones interesantes como:
+
+* `maxsize`: Tamaño máximo en bytes del archivo de log. Al superar el tamaño se crea un nuevo archivo de log.
+* `maxFiles`: Limita el número de archivos a crear cuando se excede el tamaño máximo del archivo de logs
+* `zippedArchive`: Si es `true`, se comprimen todos los archivos de log excepto el actual.
+====
 
 ### Registro de logs con Winston
 
@@ -2060,26 +2037,32 @@ Aquí vamos a ver cómo un endpoint registra una entrada de log. En el controlad
 
 [source, ts]
 ----
-import { 
+import { <1>
     ...
     Inject } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 
 @Controller()
-export class SomeClass {
+export class SomeController {
   constructor(
     ...
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger, <1>
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger, <2>
   ) {
   ...
   }
   ...
 }
 ----
-<1> Winston se inyecta en el constructor y queda disponible como `logger`
+<1> Importación de paquetes y opciones de Winston
+<2> Winston se inyecta en el constructor y queda disponible como `logger`
 
-Para usarlo indicaríamos el nivel de la entrada de log, y concatenaríamos pares clave-valor que queremos resgistrar en el log.
+[IMPORTANT]
+====
+Comprobar que el `Logger` que se importa es el de Winston y no otro, como el de Nest o el de TypeORM.
+====
+
+Para crear una entrada de log se indica el nivel de la entrada de log, y concatenaríamos pares clave-valor que queremos registrar en el log.
 
 [source, ts]
 ----
@@ -2089,18 +2072,108 @@ Para usarlo indicaríamos el nivel de la entrada de log, y concatenaríamos pare
       service: 'Books',
     });
 ----
- 
+
 Como se trata de una entrada de tipo `info`, quedaría registrada en `log/info.log`:
 
 
 [source, json]
 ----
-{"level":"info","message":"Hola","service":"Books","timestamp":"2020-08-05 19:14:08"}
+{"level":"info","message":"Hola","service":"Books","timestamp":"2020-08-05 19:14:08"} <1>
 ----
+<1> `timestamp` puede ser incluido de forma automática si se configura así en las opciones de las entradas de log
+
+[NOTE]
+====
+En una entrada de log son obligatorios los campos `level` y `message`. 
+====
+
+### Log de operaciones de la API
+
+Para finalizar veremos cómo registrar en el log operaciones de la API. Pasaremos por alto el control de errores y sólo haremos el caso feliz en que la operación se lleva a cabo con éxito. La entrada de log incluirá lo siguiente:
+
+* `level`: Indica el nivel de la entrada de log
+* `message`: Texto de la entrada
+* `statusCode` Código HTTP de la respuesta
+* `method`: Método HTTP de la petición
+* `url`: URL solicitada
+* `user`: Usuario que ha realizado la petición. Se obtiene del JWT enviado en la cabecera
+* `duration`: Tiempo en ms para resolver la petición
+* `timestamp`: Instante en el que se ha realizado la petición
+
+La mecánica que usaremos para atender una petición de la API será la siguiente:
+
+. Obtener la fecha del sistema
+. Llamar al servicio que resuelve la petición
+. Llamada a una función auxiliar que escribe una entrada en el log
+. Devolver los datos de la petición
+
+[NOTE]
+====
+Para obtener datos de la petición, como el método HTTP, url, usuario y demás, incluiremos un parámetro de tipo `Request` en cada función de la API.
+====
+
+Archivo `books/books.controller.ts`
+
+[source, json]
+----
+  ...
+  @Get()
+  ...
+  findAll(@Req() request: Request): Promise<Book[]> { <1>
+    let startTime = Date.now(); <2>
+    let data = this.booksService.findAll(request.query); <3>
+
+    this.writeLog(startTime, request, 200); <4>
+    
+    return data; <5>
+  }
+  ...
+----
+<1> Incluir un parámetro `Request` para incluir datos como la url, método HTTP y demás en la entrada de log
+<2> Obtener la hora antes de llamar al servicio que resuelve la petición
+<3> Llamar al servicio
+<4> Llamar a la función auxiliar que escribe la entrada de log
+<5> Devolver los datos de la petición
+
+Función auxiliar
+
+Archivo `books/books.controller.ts`
+
+[source, json]
+----
+...
+  writeLog(startTime: any, request: any, statusCode: number) {
+    let finishTime = Date.now();
+    let elapsedTime = finishTime - startTime;
+
+    this.logger.log({
+      level: 'info',
+      message: '',
+      statusCode: statusCode,
+      method: request['method'],
+      url: request['url'],
+      user: request['user'].username,
+      duration: elapsedTime,
+    });
+  }
+  ...
+----
+
+Tras hacer una petición `GET /api/v1/books/1` obtendríamos esta entrada en el archivo de logs `log/info/info.log`
+
+[source, json]
+----
+{"level":"info","message":"","statusCode":200,"method":"GET","url":"/api/v1/books/1","user":"mtorres","duration":8,"timestamp":"2020-08-06 13:01:49"}
+----
+
+[NOTE]
+====
+En este ejemplo se ha optado por definir una entrada de log con campos independientes fuera de `message`. Otra opción es incluirlos dentro de `message` y usar interpolación de variables.
+====
 
 ## Documentación del código
 
-NestJS usa https://compodoc.app/[Compodoc], una herramienta de documentación para Angular. Al documentar el código los miembros del equipo de desarrollo podrán entender fácilmente las características de la aplicación o librería. La documentación se anota mediante https://jsdoc.app/[JSDoc] siguiendo este esquema:
+NestJS usa https://compodoc.app/[Compodoc], una herramienta de documentación para Angular. Al documentar el código, los miembros del equipo de desarrollo podrán entender fácilmente las características de la aplicación o librería. La documentación se anota mediante https://jsdoc.app/[JSDoc] siguiendo este esquema:
 
 [source, ts]
 ----
@@ -2115,7 +2188,7 @@ Entre los tags JSDoc, destacan:
 * `@param {Type} Name Description`
 * `@ignore` para excluir un fragmento de código de la documentación
 
-Para instalar Compodoc en un proyecto NestJS basta con añadir la dependencia:
+Para instalar Compodoc en un proyecto NestJS basta con añadir el paquete:
 
 [source, bash]
 ----
