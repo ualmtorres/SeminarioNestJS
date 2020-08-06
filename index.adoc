@@ -27,7 +27,7 @@ image::logocloudstic.png[]
 ////
 COLOCA A CONTINUACION EL RESUMEN
 ////
-NestJS es un framework para el desearrollo de aplicaciones Node.js en el lado del servidor. Se programa en JavaScript y proporciona una arquitectura en la aplicación que permite el desarrollo de aplicaciones más fáciles de mantener. Su arquitectura está bastante inspirada en Angular lo que facilita el trabajo al equipo de desarrollo al no tener que usar dos formas diferentes de trabajo en el backend y en el frontend.
+NestJS es un framework para el desearrollo de aplicaciones Node.js en el lado del servidor. Se programa en TypeScript y proporciona una arquitectura en la aplicación que permite el desarrollo de aplicaciones más fáciles de mantener. Su arquitectura está bastante inspirada en Angular lo que facilita el trabajo al equipo de desarrollo al no tener que usar dos formas diferentes de trabajo en el backend y en el frontend.
 
 
 ////
@@ -53,6 +53,14 @@ Disponible el https://github.com/ualmtorres/tutorial-nest-js[repositorio] usado 
 
 // Entrar en modo numerado de apartados
 :numbered:
+
+## Introducción
+
+A la hora de desarrollar un proyecto es importante tener una estructura y una estrategia bien planeada para la organización del código. En situaciones donde además los requerimientos son cambiantes es fácil llegar pronto al desastre. Uno de los motivos por los que surge el framework https://nestjs.com/[NestJS] es precisamente el facilitar que los desarrolladores puedan tener una estructura modular de código, lo que facilita el desarrollo de aplicaciones NodeJS empresariales.
+
+NestJS es un framework NodeJS construido sobre NodeJS y TypeScript, y que hace uso de https://expressjs.com/es/[Express]. Además ofrece soporte para las principales bases de datos (MySQL, PostgreSQL, Oracle, SQLite, MongoDB, ...), https://swagger.io/[Swagger (OpenAPI)], autenticación, logging, y una arquitectura inspirada en https://angular.io/[Angular], características que lo hacen un framework bastante interesante.
+
+En este tutorial desarrollaremos una API (https://github.com/ualmtorres/tutorial-nest-js[repositorio]) sobre bases de datos (MySQL y PostgreSQL) que implementa endpoints para las operaciones básicas (`find, findOne, create, update, delete`). Comenzaremos creando un armazón con los controladores y servicios funcionando en modo mock. Una vez probada la conexión correcta entre ellos, se sustituirán los servicios para que interactúen con la base de datos. Además, la API implementará control de acceso a los endpoints mediante https://jwt.io/[JSON Web Tokens], quedará documentada con Swagger y registrará sus operaciones en archivos de log.
 
 ## Creación del proyecto
 
