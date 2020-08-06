@@ -1971,7 +1971,132 @@ Para más información sobre Swagger, consultar la  https://docs.nestjs.com/reci
 
 ## Logging
 
-ToDo
+A medida que las aplicaciones se complican y a medida que se les exige mayor rendimiento se vuelve más necesario contar un registro de logs que nos ayude a encontrar fallos o problemas de rendimiento. NestJS incorpora un sistema de logging que permite controlar qué mensajes se registran en el log y a dónde se dirige su salida. Sin embargo, Nest recomienda usar otros paquetes de logging más avanzados y versátiles para sistemas en producción, como https://github.com/winstonjs/winston[Winston]. Entre las características de Winston se encuentran: soporte para gran cantidad de opciones de almacenamiento, niveles de log y formateo de logs.
+
+* Opciones de almacenamiento: Winston es una librería de logging que permite varios https://github.com/winstonjs/winston/blob/master/docs/transports.md#winston-core[_transportes_]. Básicamente, un transporte es un dispositivo de almacenamiento para almacenar logs. Cada instancia de un logger de Winston puede tener varios transportes configurados para niveles diferentes. Ejemplos de transportes son consola, archivo, archivos de rotación diaria, Syslog, Datadog, ElasticSearch o MongoDB.
+* Niveles: Los niveles de log indican la gravedad, que van desde una caída del sistema hasta el aviso de una función marcada como obsoleta. Los niveles de log ayudan a ver rápidamente los logs que necesitan atención. Para cada nivel se puede configurar la cantidad de datos y de detalles a registrar.
++
+[NOTE]
+====
+Los niveles de log se priorizan de 0 a 5 (de mayor a menor prioridad)
+
+* 0: `error`
+* 1: `warn`
+* 2: `info`
+* 3: `verbose`
+* 4: `debug`
+* 5: `silly`
+
+Al especificar un nivel de log para un transporte concreto, se registará cualquier cosa con ese nivel o con una prioridad mayor (p.e. si se especifica `info`, se registará cualquier cosa a nivel `error, warn` o `info`
+====
+* Formato: Winston ofrece formateo en JSON, uso de colores y manipulación de formatos porque posteriormente surgen problemas si todo son cadenas.
+
+### Configuración de Winston
+
+Comenzamos instalando con
+
+[source, bash]
+----
+npm install --save nest-winston winston
+----
+
+A continuación, se configuran las opciones de nivel de log, transporte y formato en `app.module.ts`. En este ejemplo se registran los logs con nivel `info` (que registrará `info, warn` y `error`). Las opciones de formato incluyen la fecha y JSON. >Como transportes, se usarán 3 archivos de logs independientes (uno para errores, otro para `debug y otro para `info`) y salida por consola para nivel `debug`.
+
+Archivo `app.module.ts`
+
+[source, ts]
+----
+...
+import { WinstonModule } from 'nest-winston'; <1>
+import * as winston from 'winston';
+import * as path from 'path';
+
+@Module({
+  imports: [
+    ...
+    WinstonModule.forRoot({
+      level: 'info', <2>
+      format: winston.format.combine( <3>
+        winston.format.timestamp({
+          format: 'YYYY-MM-DD HH:mm:ss',
+        }),
+        winston.format.errors({ stack: true }),
+        winston.format.splat(),
+        winston.format.json(),
+      ),
+      transports: [ <4>
+        new winston.transports.File({
+          dirname: path.join(__dirname, './../log/debug/'),
+          filename: 'debug.log',
+          level: 'debug',
+        }),
+        new winston.transports.File({
+          dirname: path.join(__dirname, './../log/error/'),
+          filename: 'error.log',
+          level: 'error',
+        }),
+        new winston.transports.File({
+          dirname: path.join(__dirname, './../log/info/'),
+          filename: 'info.log',
+          level: 'info',
+        }),
+        new winston.transports.Console({ level: 'debug' }),
+      ],
+    }),
+  ],
+  controllers: [...],
+  providers: [...],
+})
+export class AppModule {}
+----
+<1> Importaciones necesarias de Winston y paths para trata con las rutas de los archivos de log
+<2> Configuración del nivel `info`
+<3> Formato definido para las entradas de log
+<4> Transportes: 3 archivos y salida por consola para nivel mínimo de `debug`
+
+### Registro de logs con Winston
+
+Aquí vamos a ver cómo un endpoint registra una entrada de log. En el controlador y en general en cualquier clase que usase Winston, haríamos la configuración siguiente:
+
+[source, ts]
+----
+import { 
+    ...
+    Inject } from '@nestjs/common';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+
+@Controller()
+export class SomeClass {
+  constructor(
+    ...
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger, <1>
+  ) {
+  ...
+  }
+  ...
+}
+----
+<1> Winston se inyecta en el constructor y queda disponible como `logger`
+
+Para usarlo indicaríamos el nivel de la entrada de log, y concatenaríamos pares clave-valor que queremos resgistrar en el log.
+
+[source, ts]
+----
+    this.logger.log({
+      level: 'info',
+      message: 'Hola',
+      service: 'Books',
+    });
+----
+ 
+Como se trata de una entrada de tipo `info`, quedaría registrada en `log/info.log`:
+
+
+[source, json]
+----
+{"level":"info","message":"Hola","service":"Books","timestamp":"2020-08-05 19:14:08"}
+----
 
 ## Documentación del código
 

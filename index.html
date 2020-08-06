@@ -500,7 +500,12 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#truedescarga-de-json">10.3. Descarga de JSON</a></li>
 </ul>
 </li>
-<li><a href="#truelogging-2">11. Logging</a></li>
+<li><a href="#truelogging-2">11. Logging</a>
+<ul class="sectlevel2">
+<li><a href="#trueconfiguraci-n-de-winston">11.1. Configuración de Winston</a></li>
+<li><a href="#trueregistro-de-logs-con-winston">11.2. Registro de logs con Winston</a></li>
+</ul>
+</li>
 <li><a href="#truedocumentaci-n-del-c-digo">12. Documentación del código</a></li>
 <li><a href="#trueap-ndice-a-datos-de-ejemplo">Apéndice A. Datos de ejemplo</a></li>
 </ul>
@@ -3674,7 +3679,196 @@ export class BooksController {
 <h2 id="truelogging-2"><a class="anchor" href="#truelogging-2"></a>11. Logging</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>ToDo</p>
+<p>A medida que las aplicaciones se complican y a medida que se les exige mayor rendimiento se vuelve más necesario contar un registro de logs que nos ayude a encontrar fallos o problemas de rendimiento. NestJS incorpora un sistema de logging que permite controlar qué mensajes se registran en el log y a dónde se dirige su salida. Sin embargo, Nest recomienda usar otros paquetes de logging más avanzados y versátiles para sistemas en producción, como <a href="https://github.com/winstonjs/winston">Winston</a>. Entre las características de Winston se encuentran: soporte para gran cantidad de opciones de almacenamiento, niveles de log y formateo de logs.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Opciones de almacenamiento: Winston es una librería de logging que permite varios <a href="https://github.com/winstonjs/winston/blob/master/docs/transports.md#winston-core"><em>transportes</em></a>. Básicamente, un transporte es un dispositivo de almacenamiento para almacenar logs. Cada instancia de un logger de Winston puede tener varios transportes configurados para niveles diferentes. Ejemplos de transportes son consola, archivo, archivos de rotación diaria, Syslog, Datadog, ElasticSearch o MongoDB.</p>
+</li>
+<li>
+<p>Niveles: Los niveles de log indican la gravedad, que van desde una caída del sistema hasta el aviso de una función marcada como obsoleta. Los niveles de log ayudan a ver rápidamente los logs que necesitan atención. Para cada nivel se puede configurar la cantidad de datos y de detalles a registrar.</p>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Los niveles de log se priorizan de 0 a 5 (de mayor a menor prioridad)</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>0: <code>error</code></p>
+</li>
+<li>
+<p>1: <code>warn</code></p>
+</li>
+<li>
+<p>2: <code>info</code></p>
+</li>
+<li>
+<p>3: <code>verbose</code></p>
+</li>
+<li>
+<p>4: <code>debug</code></p>
+</li>
+<li>
+<p>5: <code>silly</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Al especificar un nivel de log para un transporte concreto, se registará cualquier cosa con ese nivel o con una prioridad mayor (p.e. si se especifica <code>info</code>, se registará cualquier cosa a nivel <code>error, warn</code> o <code>info</code></p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>Formato: Winston ofrece formateo en JSON, uso de colores y manipulación de formatos porque posteriormente surgen problemas si todo son cadenas.</p>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="trueconfiguraci-n-de-winston"><a class="anchor" href="#trueconfiguraci-n-de-winston"></a>11.1. Configuración de Winston</h3>
+<div class="paragraph">
+<p>Comenzamos instalando con</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">npm install --save nest-winston winston</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A continuación, se configuran las opciones de nivel de log, transporte y formato en <code>app.module.ts</code>. En este ejemplo se registran los logs con nivel <code>info</code> (que registrará <code>info, warn</code> y <code>error</code>). Las opciones de formato incluyen la fecha y JSON. &gt;Como transportes, se usarán 3 archivos de logs independientes (uno para errores, otro para <code>debug y otro para `info</code>) y salida por consola para nivel <code>debug</code>.</p>
+</div>
+<div class="paragraph">
+<p>Archivo <code>app.module.ts</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">...
+import { WinstonModule } from 'nest-winston'; <i class="conum" data-value="1"></i><b>(1)</b>
+import * as winston from 'winston';
+import * as path from 'path';
+
+@Module({
+  imports: [
+    ...
+    WinstonModule.forRoot({
+      level: 'info', <i class="conum" data-value="2"></i><b>(2)</b>
+      format: winston.format.combine( <i class="conum" data-value="3"></i><b>(3)</b>
+        winston.format.timestamp({
+          format: 'YYYY-MM-DD HH:mm:ss',
+        }),
+        winston.format.errors({ stack: true }),
+        winston.format.splat(),
+        winston.format.json(),
+      ),
+      transports: [ <i class="conum" data-value="4"></i><b>(4)</b>
+        new winston.transports.File({
+          dirname: path.join(__dirname, './../log/debug/'),
+          filename: 'debug.log',
+          level: 'debug',
+        }),
+        new winston.transports.File({
+          dirname: path.join(__dirname, './../log/error/'),
+          filename: 'error.log',
+          level: 'error',
+        }),
+        new winston.transports.File({
+          dirname: path.join(__dirname, './../log/info/'),
+          filename: 'info.log',
+          level: 'info',
+        }),
+        new winston.transports.Console({ level: 'debug' }),
+      ],
+    }),
+  ],
+  controllers: [...],
+  providers: [...],
+})
+export class AppModule {}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Importaciones necesarias de Winston y paths para trata con las rutas de los archivos de log</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Configuración del nivel <code>info</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Formato definido para las entradas de log</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Transportes: 3 archivos y salida por consola para nivel mínimo de <code>debug</code></td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="trueregistro-de-logs-con-winston"><a class="anchor" href="#trueregistro-de-logs-con-winston"></a>11.2. Registro de logs con Winston</h3>
+<div class="paragraph">
+<p>Aquí vamos a ver cómo un endpoint registra una entrada de log. En el controlador y en general en cualquier clase que usase Winston, haríamos la configuración siguiente:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import {
+    ...
+    Inject } from '@nestjs/common';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+
+@Controller()
+export class SomeClass {
+  constructor(
+    ...
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger, <i class="conum" data-value="1"></i><b>(1)</b>
+  ) {
+  ...
+  }
+  ...
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Winston se inyecta en el constructor y queda disponible como <code>logger</code></td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Para usarlo indicaríamos el nivel de la entrada de log, y concatenaríamos pares clave-valor que queremos resgistrar en el log.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">    this.logger.log({
+      level: 'info',
+      message: 'Hola',
+      service: 'Books',
+    });</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Como se trata de una entrada de tipo <code>info</code>, quedaría registrada en <code>log/info.log</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json" data-lang="json">{"level":"info","message":"Hola","service":"Books","timestamp":"2020-08-05 19:14:08"}</code></pre>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -3800,7 +3994,7 @@ export class BooksController {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2020-08-05 16:54:27 CEST
+Last updated 2020-08-06 08:12:44 CEST
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/styles/github.min.css">
