@@ -1939,6 +1939,88 @@ El elemento `servers` está sin definir. De cara a subir este JSON a un servidor
 
 Para más información sobre Swagger, consultar la  https://docs.nestjs.com/recipes/swagger[documentación oficial]
 
+### Cambio del frontend
+
+https://www.npmjs.com/package/nestjs-redoc[NestJS-Redoc] es un frontend para la especificación de la API en Swagger. Está basado en https://github.com/Redocly/redoc[Redoc] y permite una presentación más sencilla y elaborada que la proporcionada por Swagger UI ofreciendo además funciones de búsqueda.
+
+La instalación se realiza con 
+
+[source, bash]
+----
+$ npm install --save nestjs-redoc
+----
+
+NestJS-Redoc se apoya en la configuración realizada con Swagger y añade unas opciones propias (p.e. logo y título de la página). Al igual que con Swagger, la configuración de Redoc se realiza en `app.module.ts`. Sin embargo, hay que indicar que la documentación ya no la sirve Swagger UI, sino Redoc. De esto se encarga el método `setup` de `RedocModule` tal y como se muestra a continuación.
+
+Archivo `app.module.ts`
+[source, typescript]
+----
+...
+import { RedocModule, RedocOptions } from 'nestjs-redoc'; <1>
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  // Configurar títulos de documnentación
+  const options = new DocumentBuilder() <2>
+    .setTitle('Sample REST API')
+    .setDescription('Sample API REST Description')
+    .setVersion('1.0')
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: 'header' },
+      'access-token',
+    )
+    .build();
+  const document = SwaggerModule.createDocument(app, options);
+
+  const redocOptions: RedocOptions = { <3>
+    favicon: 'https://boletin.ual.es/wp-content/uploads/2016/04/favicon.png',
+    title: 'API Reservas',
+    logo: {
+      url:
+        'https://www.ual.es/application/themes/ual/images/logoual25-300px.png',
+      backgroundColor: '#0082B7',
+    },
+    sortPropsAlphabetically: true,
+    hideDownloadButton: false,
+    hideHostname: false,
+    noAutoAuth: false,
+  };
+
+  // La ruta en que se sirve la documentación
+  //SwaggerModule.setup('docs', app, document); <4>
+  await RedocModule.setup('/docs', app, document, redocOptions); <5>
+
+  await app.listen(3000);
+}
+bootstrap();
+----
+<1> Importaciones de Redoc
+<2> Configuración de opciones generales de la documentación Swagger
+<3> Configuración de las opciones de Redoc
+<4> La documentación ya no la sirve Swagger UI
+<4> Servir la documentación con Redoc usando las opciones definidas en `redocOptions`
+
+La figura siguiente ilustra el nuevo aspecto de la documentación Swagger.
+
+image::redoc.png[]
+
+[NOTE]
+====
+Para más información sobre las opciones disponibles en Redoc, consultar la https://github.com/mxarc/nestjs-redoc#readme[documentación oficial].
+====
+
+Puedes encontrar ejemplos de uso de Redoc en:
+
+* https://docs.docker.com/engine/api/v1.25/[Docker Engine API]
+* https://www.commbox.io/api/[Commbox]
+* https://www.zuora.com/developer/api-reference/[Zuora]
+
+[IMPORTANT]
+====
+La opción de envío de peticiones a la API a través de Swagger (_Try it out_) es una función de pago en Redoc (https://redoc.ly/[Redocly]) por lo que el uso de Redoc en su versión open source se limita a la documentación sin contar con la funcionalidad de envío de peticiones.
+====
+
 ## Logging
 
 A medida que las aplicaciones se complican y a medida que se les exige mayor rendimiento se vuelve más necesario contar un registro de logs que nos ayude a encontrar fallos o problemas de rendimiento. NestJS incorpora un sistema de logging que permite controlar los mensajes que se registran en el log y especificar su salida. Sin embargo, Nest recomienda usar otros paquetes de logging más avanzados y versátiles para sistemas en producción, como https://github.com/winstonjs/winston[Winston]. Entre las características de Winston se encuentran: soporte para gran cantidad de opciones de almacenamiento, niveles de log y formateo de logs.

@@ -491,6 +491,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#truedocumentaci-n-de-dtos-entidades-clases-e-interfaces">9.1. Documentación de DTOs, entidades, clases e interfaces</a></li>
 <li><a href="#truedocumentaci-n-de-los-controladores">9.2. Documentación de los controladores</a></li>
 <li><a href="#truedescarga-de-json">9.3. Descarga de JSON</a></li>
+<li><a href="#truecambio-del-frontend">9.4. Cambio del frontend</a></li>
 </ul>
 </li>
 <li><a href="#truelogging">10. Logging</a>
@@ -3609,6 +3610,145 @@ export class BooksController {
 <p>Para más información sobre Swagger, consultar la  <a href="https://docs.nestjs.com/recipes/swagger">documentación oficial</a></p>
 </div>
 </div>
+<div class="sect2">
+<h3 id="truecambio-del-frontend"><a class="anchor" href="#truecambio-del-frontend"></a>9.4. Cambio del frontend</h3>
+<div class="paragraph">
+<p><a href="https://www.npmjs.com/package/nestjs-redoc">NestJS-Redoc</a> es un frontend para la especificación de la API en Swagger. Está basado en <a href="https://github.com/Redocly/redoc">Redoc</a> y permite una presentación más sencilla y elaborada que la proporcionada por Swagger UI ofreciendo además funciones de búsqueda.</p>
+</div>
+<div class="paragraph">
+<p>La instalación se realiza con</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">$ npm install --save nestjs-redoc</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>NestJS-Redoc se apoya en la configuración realizada con Swagger y añade unas opciones propias (p.e. logo y título de la página). Al igual que con Swagger, la configuración de Redoc se realiza en <code>app.module.ts</code>. Sin embargo, hay que indicar que la documentación ya no la sirve Swagger UI, sino Redoc. De esto se encarga el método <code>setup</code> de <code>RedocModule</code> tal y como se muestra a continuación.</p>
+</div>
+<div class="paragraph">
+<p>Archivo <code>app.module.ts</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-typescript" data-lang="typescript">...
+import { RedocModule, RedocOptions } from 'nestjs-redoc'; <i class="conum" data-value="1"></i><b>(1)</b>
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  // Configurar títulos de documnentación
+  const options = new DocumentBuilder() <i class="conum" data-value="2"></i><b>(2)</b>
+    .setTitle('Sample REST API')
+    .setDescription('Sample API REST Description')
+    .setVersion('1.0')
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: 'header' },
+      'access-token',
+    )
+    .build();
+  const document = SwaggerModule.createDocument(app, options);
+
+  const redocOptions: RedocOptions = { <i class="conum" data-value="3"></i><b>(3)</b>
+    favicon: 'https://boletin.ual.es/wp-content/uploads/2016/04/favicon.png',
+    title: 'API Reservas',
+    logo: {
+      url:
+        'https://www.ual.es/application/themes/ual/images/logoual25-300px.png',
+      backgroundColor: '#0082B7',
+    },
+    sortPropsAlphabetically: true,
+    hideDownloadButton: false,
+    hideHostname: false,
+    noAutoAuth: false,
+  };
+
+  // La ruta en que se sirve la documentación
+  //SwaggerModule.setup('docs', app, document); <i class="conum" data-value="4"></i><b>(4)</b>
+  await RedocModule.setup('/docs', app, document, redocOptions); <i class="conum" data-value="5"></i><b>(5)</b>
+
+  await app.listen(3000);
+}
+bootstrap();</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Importaciones de Redoc</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Configuración de opciones generales de la documentación Swagger</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Configuración de las opciones de Redoc</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>La documentación ya no la sirve Swagger UI</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>Servir la documentación con Redoc usando las opciones definidas en <code>redocOptions</code></td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>La figura siguiente ilustra el nuevo aspecto de la documentación Swagger.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/redoc.png" alt="redoc.png">
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Para más información sobre las opciones disponibles en Redoc, consultar la <a href="https://github.com/mxarc/nestjs-redoc#readme">documentación oficial</a>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Puedes encontrar ejemplos de uso de Redoc en:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://docs.docker.com/engine/api/v1.25/">Docker Engine API</a></p>
+</li>
+<li>
+<p><a href="https://www.commbox.io/api/">Commbox</a></p>
+</li>
+<li>
+<p><a href="https://www.zuora.com/developer/api-reference/">Zuora</a></p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>La opción de envío de peticiones a la API a través de Swagger (<em>Try it out</em>) es una función de pago en Redoc (<a href="https://redoc.ly/">Redocly</a>) por lo que el uso de Redoc en su versión open source se limita a la documentación sin contar con la funcionalidad de envío de peticiones.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -4169,7 +4309,7 @@ export class SomeController {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2020-08-06 19:29:35 CEST
+Last updated 2020-09-18 08:03:10 CEST
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/styles/github.min.css">
