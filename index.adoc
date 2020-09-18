@@ -2003,7 +2003,7 @@ bootstrap();
 
 La figura siguiente ilustra el nuevo aspecto de la documentación Swagger.
 
-image::redoc.png[]
+image::Redoc.png[]
 
 [NOTE]
 ====
