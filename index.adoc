@@ -1979,7 +1979,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, options);
 
   const redocOptions: RedocOptions = { <3>
-    favicon: 'https://boletin.ual.es/wp-content/uploads/2016/04/favicon.png',
+    favicon: 'https://www.ual.es/favicon.ico',
     title: 'API Reservas',
     logo: {
       url:
