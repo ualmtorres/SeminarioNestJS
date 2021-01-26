@@ -503,6 +503,12 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#truedocumentaci-n-del-c-digo">11. Documentación del código</a></li>
 <li><a href="#trueap-ndice-a-datos-de-ejemplo">Apéndice A. Datos de ejemplo</a></li>
+<li><a href="#trueap-ndice-b-generaci-n-de-c-digo">Apéndice B. Generación de código</a>
+<ul class="sectlevel2">
+<li><a href="#truegenerador-de-archivos-para-una-entidad">Generador de archivos para una entidad</a></li>
+<li><a href="#truegenerador-del-c-digo-de-la-entidad">Generador del código de la entidad</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -4320,10 +4326,313 @@ export class SomeController {
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="trueap-ndice-b-generaci-n-de-c-digo"><a class="anchor" href="#trueap-ndice-b-generaci-n-de-c-digo"></a>Apéndice B. Generación de código</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A la hora de abordar un proyecto de backend hay tareas repetitivas que son susceptibles de ser sometidas a algún grado de automatización. Esto es algo deseable ya que de forma directa esto aumentará nuestra eficacia por un lado, y por otro reducirá la introducción de errores. Veamos aquí dos generadores de código útiles.</p>
+</div>
+<div class="sect2">
+<h3 id="truegenerador-de-archivos-para-una-entidad"><a class="anchor" href="#truegenerador-de-archivos-para-una-entidad"></a>Generador de archivos para una entidad</h3>
+<div class="paragraph">
+<p>Normalmente, para cada entidad de nuestro proyecto de backend tendremos que crear un módulo, un controlador, un servicio, una clase para la entidad y algunos DTO (p.e. el de crear y el de modificar). Todos estos archivos pueden ser generados de forma automática por el CLI de NestJS generando lo que se denomina un <em>recurso</em>. Desde la carpeta del proyecto ejecutaremos el comando siguiente para cada <em>recurso</em> que queramos crear.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">$ nest generate resource &lt;nombre-recurso&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>En primer lugar nos pedirá el tipo de nivel de transporte que queremos usar. Elegiremos <code>REST API</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">? What transport layer do you use? (Use arrow keys)
+❯ REST API
+  GraphQL (code first)
+  GraphQL (schema first)
+  Microservice (non-HTTP)
+  WebSockets</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>En segundo lugar aceptaremos la generación de los endpoints básicos para las operaciones CRUD.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">? Would you like to generate CRUD entry points? (Y/n)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>En el caso de que hayamos elegido crear los recursos para <code>users</code> se crearán los archivos siguientes y se actualizará <code>src/app.module.ts</code> para añadir el módulo del recurso creado (p.e. <code>users.module</code>).</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">CREATE src/users/users.controller.spec.ts (566 bytes)
+CREATE src/users/users.controller.ts (890 bytes)
+CREATE src/users/users.module.ts (247 bytes)
+CREATE src/users/users.service.spec.ts (453 bytes)
+CREATE src/users/users.service.ts (609 bytes)
+CREATE src/users/dto/create-user.dto.ts (30 bytes)
+CREATE src/users/dto/update-user.dto.ts (169 bytes)
+CREATE src/users/entities/user.entity.ts (21 bytes)
+UPDATE src/app.module.ts (312 bytes)</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Archivo <code>users.controller.ts</code> creado</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-typescript" data-lang="typescript">import { Controller, Get, Post, Body, Put, Param, Delete } from '@nestjs/common';
+import { UsersService } from './users.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+
+@Controller('users')
+export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
+
+  @Post()
+  create(@Body() createUserDto: CreateUserDto) {
+    return this.usersService.create(createUserDto);
+  }
+
+  @Get()
+  findAll() {
+    return this.usersService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.usersService.findOne(+id);
+  }
+
+  @Put(':id')
+  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.update(+id, updateUserDto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.usersService.remove(+id);
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Archivo <code>users.service.ts</code> creado</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-typescript" data-lang="typescript">import { Injectable } from '@nestjs/common';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+
+@Injectable()
+export class UsersService {
+  create(createUserDto: CreateUserDto) {
+    return 'This action adds a new user';
+  }
+
+  findAll() {
+    return `This action returns all users`;
+  }
+
+  findOne(id: number) {
+    return `This action returns a #${id} user`;
+  }
+
+  update(id: number, updateUserDto: UpdateUserDto) {
+    return `This action updates a #${id} user`;
+  }
+
+  remove(id: number) {
+    return `This action removes a #${id} user`;
+  }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Voilà!! A partir de los archivos generados ya se pueden adaptar los endpoints del controlador, crear el código de los servicios y adaptar las entidades y los DTOs al caso de base de datos del proyecto.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Más información sobre <code>CRUD generator</code> en la <a href="https://docs.nestjs.com/recipes/crud-generator">documentación oficial</a></p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="truegenerador-del-c-digo-de-la-entidad"><a class="anchor" href="#truegenerador-del-c-digo-de-la-entidad"></a>Generador del código de la entidad</h3>
+<div class="paragraph">
+<p><code>typeorm-model-generator</code> es un paquete NodeJS para trabajar con TypeORM que genera los modelos a partir de las tablas existentes en una base de datos. Actualmente soporta los siguientes DBMS:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Microsoft SQL Server</p>
+</li>
+<li>
+<p>PostgreSQL</p>
+</li>
+<li>
+<p>MySQL</p>
+</li>
+<li>
+<p>MariaDB</p>
+</li>
+<li>
+<p>Oracle Database</p>
+</li>
+<li>
+<p>SQLite</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p><code>typeorm-model-generator</code> incorpora el driver para todas las bases de datos soportadas excepto para Oracle. Para Oracle se debe tener instalado Oracle Instant Client en el equipo donde se vaya a ejecutar <code>typeorm-model-generator</code>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p><code>typeorm-model-generator</code> se podrá invocar directamente mediante <a href="https://www.npmjs.com/package/npx"><code>npx</code></a>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p><code>npx</code> es una herramienta que permite ejecutar paquetes de binarios <code>npm</code>. <code>npx</code> queda instalado en versiones posteriores a <code>npm 5.2</code>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>A continuación se muestran unos parámetros habituales que utilizaremos al generar los modelos con <code>typeorm-model-generator</code></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>-h</code>: Host de la base de datos</p>
+</li>
+<li>
+<p><code>-d</code>: Nombre de la base de datos</p>
+</li>
+<li>
+<p><code>-u</code>: Usuario</p>
+</li>
+<li>
+<p><code>-x</code>: Contraseña</p>
+</li>
+<li>
+<p><code>-e</code>: DBMS (p.e. <code>mysql, oracle, mssql, pgsql</code>, &#8230;&#8203;)</p>
+</li>
+<li>
+<p><code>-o</code>: (opcional) Ruta en la que guardar los archivos generados</p>
+</li>
+<li>
+<p><code>-p</code>: (opcional) Puerto</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>A continuación se muestra un ejemplo de uso en Oracle</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">$ npx typeorm-model-generator -h localhost -d myDatabase -u myUser -x myPassword -e oracle -o ./reservations -p 1527</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Esto generará un archivo de entidad para cada tabla encontrada en la base de datos indicada incluyendo la definición de cada uno de los campos de la tabla.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Usa los archivos generados para adaptar el contenido de los archivos de entidades generados con <em>CRUD generator</em> del apartado anterior <a href="#truegenerador-de-archivos-para-una-entidad">Generador de archivos para una entidad</a>.</p>
+</div>
+<div class="paragraph">
+<p>Los archivos generados por <code>typeorm-model-generator</code> también se pueden usar para personalizar los DTO generados por <em>CRUD generator</em>. Para adaptar los DTOs normalmente quitaremos algunos de los campos de los modelos creados por <em>CRUD generator</em>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>A continuación se muestra un ejemplo de archivo creado por ``</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-typescript" data-lang="typescript">import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
+import { RstCalendarios } from "./RstCalendarios";
+
+@Index("RST_DIAS_PK", ["yDia"], { unique: true })
+@Entity("RST_DIAS") <i class="conum" data-value="1"></i><b>(1)</b>
+export class RstDias {
+  @Column("varchar2", { name: "T_OBSERVACIONES", nullable: true, length: 100 }) <i class="conum" data-value="2"></i><b>(2)</b>
+  tObservaciones: string | null;
+
+  @Column("varchar2", { name: "L_RESERVABLE", nullable: true, length: 1 })
+  lReservable: string | null;
+
+  @Column("date", { name: "F_CALENDARIO", nullable: true })
+  fCalendario: Date | null;
+
+  @Column("number", { primary: true, name: "Y_DIA" })
+  yDia: number;
+
+  @ManyToOne(() =&gt; RstCalendarios, (rstCalendarios) =&gt; rstCalendarios.rstDias) <i class="conum" data-value="3"></i><b>(3)</b>
+  @JoinColumn([{ name: "Y_CALENDARIO", referencedColumnName: "yCalendario" }])
+  yCalendario: RstCalendarios;
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Entidad con el nombre de la tabla con la que se corresponde</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Definición de cada una de las columnas con sus tipos de datos, restricciones, &#8230;&#8203;</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Anotaciones para relaciones</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2020-09-29 00:32:41 CEST
+Last updated 2021-01-27 00:42:50 CET
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/styles/github.min.css">

@@ -2350,3 +2350,215 @@ Para más información sobre JSDoc, consultar la https://compodoc.app/[documenta
   }
 ]
 ----
+
+## Apéndice B. Generación de código
+
+A la hora de abordar un proyecto de backend hay tareas repetitivas que son susceptibles de ser sometidas a algún grado de automatización. Esto es algo deseable ya que de forma directa esto aumentará nuestra eficacia por un lado, y por otro reducirá la introducción de errores. Veamos aquí dos generadores de código útiles. 
+
+### Generador de archivos para una entidad
+
+Normalmente, para cada entidad de nuestro proyecto de backend tendremos que crear un módulo, un controlador, un servicio, una clase para la entidad y algunos DTO (p.e. el de crear y el de modificar). Todos estos archivos pueden ser generados de forma automática por el CLI de NestJS generando lo que se denomina un _recurso_. Desde la carpeta del proyecto ejecutaremos el comando siguiente para cada _recurso_ que queramos crear.
+
+[source, bash]
+----
+$ nest generate resource <nombre-recurso>
+----
+
+En primer lugar nos pedirá el tipo de nivel de transporte que queremos usar. Elegiremos `REST API`
+
+[source, bash]
+----
+? What transport layer do you use? (Use arrow keys)
+❯ REST API
+  GraphQL (code first)
+  GraphQL (schema first)
+  Microservice (non-HTTP)
+  WebSockets
+----
+
+En segundo lugar aceptaremos la generación de los endpoints básicos para las operaciones CRUD.
+
+[source, bash]
+----
+? Would you like to generate CRUD entry points? (Y/n)
+----
+
+En el caso de que hayamos elegido crear los recursos para `users` se crearán los archivos siguientes y se actualizará `src/app.module.ts` para añadir el módulo del recurso creado (p.e. `users.module`).
+
+[source, bash]
+----
+CREATE src/users/users.controller.spec.ts (566 bytes)
+CREATE src/users/users.controller.ts (890 bytes)
+CREATE src/users/users.module.ts (247 bytes)
+CREATE src/users/users.service.spec.ts (453 bytes)
+CREATE src/users/users.service.ts (609 bytes)
+CREATE src/users/dto/create-user.dto.ts (30 bytes)
+CREATE src/users/dto/update-user.dto.ts (169 bytes)
+CREATE src/users/entities/user.entity.ts (21 bytes)
+UPDATE src/app.module.ts (312 bytes)
+----
+
+.Archivo `users.controller.ts` creado
+[source, typescript]
+----
+import { Controller, Get, Post, Body, Put, Param, Delete } from '@nestjs/common';
+import { UsersService } from './users.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+
+@Controller('users')
+export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
+
+  @Post()
+  create(@Body() createUserDto: CreateUserDto) {
+    return this.usersService.create(createUserDto);
+  }
+
+  @Get()
+  findAll() {
+    return this.usersService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.usersService.findOne(+id);
+  }
+
+  @Put(':id')
+  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.update(+id, updateUserDto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.usersService.remove(+id);
+  }
+}
+----
+
+.Archivo `users.service.ts` creado
+[source, typescript]
+----
+import { Injectable } from '@nestjs/common';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+
+@Injectable()
+export class UsersService {
+  create(createUserDto: CreateUserDto) {
+    return 'This action adds a new user';
+  }
+
+  findAll() {
+    return `This action returns all users`;
+  }
+
+  findOne(id: number) {
+    return `This action returns a #${id} user`;
+  }
+
+  update(id: number, updateUserDto: UpdateUserDto) {
+    return `This action updates a #${id} user`;
+  }
+
+  remove(id: number) {
+    return `This action removes a #${id} user`;
+  }
+}
+----
+
+Voilà!! A partir de los archivos generados ya se pueden adaptar los endpoints del controlador, crear el código de los servicios y adaptar las entidades y los DTOs al caso de base de datos del proyecto.
+
+
+[NOTE]
+====
+Más información sobre `CRUD generator` en la https://docs.nestjs.com/recipes/crud-generator[documentación oficial]
+====
+
+### Generador del código de la entidad
+
+`typeorm-model-generator` es un paquete NodeJS para trabajar con TypeORM que genera los modelos a partir de las tablas existentes en una base de datos. Actualmente soporta los siguientes DBMS: 
+
+* Microsoft SQL Server
+* PostgreSQL
+* MySQL
+* MariaDB
+* Oracle Database
+* SQLite
+
+[IMPORTANT]
+====
+`typeorm-model-generator` incorpora el driver para todas las bases de datos soportadas excepto para Oracle. Para Oracle se debe tener instalado Oracle Instant Client en el equipo donde se vaya a ejecutar `typeorm-model-generator`.
+====
+
+`typeorm-model-generator` se podrá invocar directamente mediante https://www.npmjs.com/package/npx[`npx`].
+
+[NOTE]
+====
+`npx` es una herramienta que permite ejecutar paquetes de binarios `npm`. `npx` queda instalado en versiones posteriores a `npm 5.2`. 
+====
+
+A continuación se muestran unos parámetros habituales que utilizaremos al generar los modelos con `typeorm-model-generator`
+
+* `-h`: Host de la base de datos
+* `-d`: Nombre de la base de datos
+* `-u`: Usuario
+* `-x`: Contraseña
+* `-e`: DBMS (p.e. `mysql, oracle, mssql, pgsql`, ...) 
+* `-o`: (opcional) Ruta en la que guardar los archivos generados
+* `-p`: (opcional) Puerto
+
+A continuación se muestra un ejemplo de uso en Oracle
+
+[source, bash]
+----
+$ npx typeorm-model-generator -h localhost -d myDatabase -u myUser -x myPassword -e oracle -o ./reservations -p 1527
+----
+
+Esto generará un archivo de entidad para cada tabla encontrada en la base de datos indicada incluyendo la definición de cada uno de los campos de la tabla. 
+
+[TIP]
+====
+Usa los archivos generados para adaptar el contenido de los archivos de entidades generados con _CRUD generator_ del apartado anterior <<Generador de archivos para una entidad>>.
+
+Los archivos generados por `typeorm-model-generator` también se pueden usar para personalizar los DTO generados por _CRUD generator_. Para adaptar los DTOs normalmente quitaremos algunos de los campos de los modelos creados por _CRUD generator_.
+====
+
+A continuación se muestra un ejemplo de archivo creado por ``
+
+[source, typescript]
+----
+import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
+import { RstCalendarios } from "./RstCalendarios";
+
+@Index("RST_DIAS_PK", ["yDia"], { unique: true })
+@Entity("RST_DIAS") <1>
+export class RstDias {
+  @Column("varchar2", { name: "T_OBSERVACIONES", nullable: true, length: 100 }) <2>
+  tObservaciones: string | null;
+
+  @Column("varchar2", { name: "L_RESERVABLE", nullable: true, length: 1 })
+  lReservable: string | null;
+
+  @Column("date", { name: "F_CALENDARIO", nullable: true })
+  fCalendario: Date | null;
+
+  @Column("number", { primary: true, name: "Y_DIA" })
+  yDia: number;
+
+  @ManyToOne(() => RstCalendarios, (rstCalendarios) => rstCalendarios.rstDias) <3>
+  @JoinColumn([{ name: "Y_CALENDARIO", referencedColumnName: "yCalendario" }])
+  yCalendario: RstCalendarios;
+}
+----
+<1> Entidad con el nombre de la tabla con la que se corresponde
+<2> Definición de cada una de las columnas con sus tipos de datos, restricciones, ...
+<3> Anotaciones para relaciones
+
+
+
+
+
+
+
