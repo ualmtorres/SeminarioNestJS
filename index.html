@@ -2,24 +2,21 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generator" content="Asciidoctor 1.5.5.dev">
+<meta name="generator" content="Asciidoctor 2.0.8.dev">
 <meta name="author" content="Servicio de las Tecnologías de la Información y las Comunicaciones - Universidad de Almería">
 <title>Introducción a NestJS</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
-/* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
-/* Remove comment around @import statement below when using as a custom stylesheet */
+/* Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
+/* Uncomment @import statement to use as custom stylesheet */
 /*@import "https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700";*/
-article,aside,details,figcaption,figure,footer,header,hgroup,main,nav,section,summary{display:block}
-audio,canvas,video{display:inline-block}
+article,aside,details,figcaption,figure,footer,header,hgroup,main,nav,section{display:block}
+audio,video{display:inline-block}
 audio:not([controls]){display:none;height:0}
-[hidden],template{display:none}
-script{display:none!important}
 html{font-family:sans-serif;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}
-body{margin:0}
-a{background:transparent}
+a{background:none}
 a:focus{outline:thin dotted}
 a:active,a:hover{outline:0}
 h1{font-size:2em;margin:.67em 0}
@@ -46,14 +43,12 @@ button,select{text-transform:none}
 button,html input[type="button"],input[type="reset"],input[type="submit"]{-webkit-appearance:button;cursor:pointer}
 button[disabled],html input[disabled]{cursor:default}
 input[type="checkbox"],input[type="radio"]{box-sizing:border-box;padding:0}
-input[type="search"]{-webkit-appearance:textfield;-moz-box-sizing:content-box;-webkit-box-sizing:content-box;box-sizing:content-box}
-input[type="search"]::-webkit-search-cancel-button,input[type="search"]::-webkit-search-decoration{-webkit-appearance:none}
 button::-moz-focus-inner,input::-moz-focus-inner{border:0;padding:0}
 textarea{overflow:auto;vertical-align:top}
 table{border-collapse:collapse;border-spacing:0}
-*,*:before,*:after{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}
+*,*::before,*::after{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}
 html,body{font-size:100%}
-body{background:#fff;color:rgba(0,0,0,.8);padding:0;margin:0;font-family:"Noto Serif","DejaVu Serif",serif;font-weight:400;font-style:normal;line-height:1;position:relative;cursor:auto}
+body{background:#fff;color:rgba(0,0,0,.8);padding:0;margin:0;font-family:"Noto Serif","DejaVu Serif",serif;font-weight:400;font-style:normal;line-height:1;position:relative;cursor:auto;tab-size:4;-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased}
 a:hover{cursor:pointer}
 img,object,embed{max-width:100%;height:auto}
 object,embed{height:100%}
@@ -65,18 +60,16 @@ img{-ms-interpolation-mode:bicubic}
 .text-center{text-align:center!important}
 .text-justify{text-align:justify!important}
 .hide{display:none}
-body{-webkit-font-smoothing:antialiased}
 img,object,svg{display:inline-block;vertical-align:middle}
 textarea{height:auto;min-height:50px}
 select{width:100%}
 .center{margin-left:auto;margin-right:auto}
-.spread{width:100%}
-p.lead,.paragraph.lead>p,#preamble>.sectionbody>.paragraph:first-of-type p{font-size:1.21875em;line-height:1.6}
+.stretch{width:100%}
 .subheader,.admonitionblock td.content>.title,.audioblock>.title,.exampleblock>.title,.imageblock>.title,.listingblock>.title,.literalblock>.title,.stemblock>.title,.openblock>.title,.paragraph>.title,.quoteblock>.title,table.tableblock>.title,.verseblock>.title,.videoblock>.title,.dlist>.title,.olist>.title,.ulist>.title,.qlist>.title,.hdlist>.title{line-height:1.45;color:#7a2518;font-weight:400;margin-top:0;margin-bottom:.25em}
 div,dl,dt,dd,ul,ol,li,h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6,pre,form,p,blockquote,th,td{margin:0;padding:0;direction:ltr}
 a{color:#2156a5;text-decoration:underline;line-height:inherit}
 a:hover,a:focus{color:#1d4b8f}
-a img{border:none}
+a img{border:0}
 p{font-family:inherit;font-weight:400;font-size:1em;line-height:1.6;margin-bottom:1.25em;text-rendering:optimizeLegibility}
 p aside{font-size:.875em;line-height:1.35;font-style:italic}
 h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6{font-family:"Open Sans","DejaVu Sans",sans-serif;font-weight:300;font-style:normal;color:#ba3925;text-rendering:optimizeLegibility;margin-top:1em;margin-bottom:.5em;line-height:1.0125em}
@@ -86,19 +79,18 @@ h2{font-size:1.6875em}
 h3,#toctitle,.sidebarblock>.content>.title{font-size:1.375em}
 h4,h5{font-size:1.125em}
 h6{font-size:1em}
-hr{border:solid #ddddd8;border-width:1px 0 0;clear:both;margin:1.25em 0 1.1875em;height:0}
+hr{border:solid #dddddf;border-width:1px 0 0;clear:both;margin:1.25em 0 1.1875em;height:0}
 em,i{font-style:italic;line-height:inherit}
 strong,b{font-weight:bold;line-height:inherit}
 small{font-size:60%;line-height:inherit}
 code{font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;font-weight:400;color:rgba(0,0,0,.9)}
 ul,ol,dl{font-size:1em;line-height:1.6;margin-bottom:1.25em;list-style-position:outside;font-family:inherit}
-ul,ol,ul.no-bullet,ol.no-bullet{margin-left:1.5em}
+ul,ol{margin-left:1.5em}
 ul li ul,ul li ol{margin-left:1.25em;margin-bottom:0;font-size:1em}
 ul.square li ul,ul.circle li ul,ul.disc li ul{list-style:inherit}
 ul.square{list-style-type:square}
 ul.circle{list-style-type:circle}
 ul.disc{list-style-type:disc}
-ul.no-bullet{list-style:none}
 ol li ul,ol li ol{margin-left:1.25em;margin-bottom:0}
 dl dt{margin-bottom:.3125em;font-weight:bold}
 dl dd{margin-bottom:1.25em}
@@ -106,55 +98,65 @@ abbr,acronym{text-transform:uppercase;font-size:90%;color:rgba(0,0,0,.8);border-
 abbr{text-transform:none}
 blockquote{margin:0 0 1.25em;padding:.5625em 1.25em 0 1.1875em;border-left:1px solid #ddd}
 blockquote cite{display:block;font-size:.9375em;color:rgba(0,0,0,.6)}
-blockquote cite:before{content:"\2014 \0020"}
+blockquote cite::before{content:"\2014 \0020"}
 blockquote cite a,blockquote cite a:visited{color:rgba(0,0,0,.6)}
 blockquote,blockquote p{line-height:1.6;color:rgba(0,0,0,.85)}
-@media only screen and (min-width:768px){h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6{line-height:1.2}
+@media screen and (min-width:768px){h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6{line-height:1.2}
 h1{font-size:2.75em}
 h2{font-size:2.3125em}
 h3,#toctitle,.sidebarblock>.content>.title{font-size:1.6875em}
 h4{font-size:1.4375em}}
 table{background:#fff;margin-bottom:1.25em;border:solid 1px #dedede}
-table thead,table tfoot{background:#f7f8f7;font-weight:bold}
+table thead,table tfoot{background:#f7f8f7}
 table thead tr th,table thead tr td,table tfoot tr th,table tfoot tr td{padding:.5em .625em .625em;font-size:inherit;color:rgba(0,0,0,.8);text-align:left}
 table tr th,table tr td{padding:.5625em .625em;font-size:inherit;color:rgba(0,0,0,.8)}
-table tr.even,table tr.alt,table tr:nth-of-type(even){background:#f8f8f7}
+table tr.even,table tr.alt{background:#f8f8f7}
 table thead tr th,table tfoot tr th,table tbody tr td,table tr td,table tfoot tr td{display:table-cell;line-height:1.6}
-body{tab-size:4}
 h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6{line-height:1.2;word-spacing:-.05em}
 h1 strong,h2 strong,h3 strong,#toctitle strong,.sidebarblock>.content>.title strong,h4 strong,h5 strong,h6 strong{font-weight:400}
-.clearfix:before,.clearfix:after,.float-group:before,.float-group:after{content:" ";display:table}
-.clearfix:after,.float-group:after{clear:both}
-*:not(pre)>code{font-size:.9375em;font-style:normal!important;letter-spacing:0;padding:.1em .5ex;word-spacing:-.15em;background-color:#f7f7f8;-webkit-border-radius:4px;border-radius:4px;line-height:1.45;text-rendering:optimizeSpeed}
-pre,pre>code{line-height:1.45;color:rgba(0,0,0,.9);font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;font-weight:400;text-rendering:optimizeSpeed}
+.clearfix::before,.clearfix::after,.float-group::before,.float-group::after{content:" ";display:table}
+.clearfix::after,.float-group::after{clear:both}
+:not(pre):not([class^=L])>code{font-size:.9375em;font-style:normal!important;letter-spacing:0;padding:.1em .5ex;word-spacing:-.15em;background:#f7f7f8;-webkit-border-radius:4px;border-radius:4px;line-height:1.45;text-rendering:optimizeSpeed;word-wrap:break-word}
+:not(pre)>code.nobreak{word-wrap:normal}
+:not(pre)>code.nowrap{white-space:nowrap}
+pre{color:rgba(0,0,0,.9);font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;line-height:1.45;text-rendering:optimizeSpeed}
+pre code,pre pre{color:inherit;font-size:inherit;line-height:inherit}
+pre>code{display:block}
+pre.nowrap,pre.nowrap pre{white-space:pre;word-wrap:normal}
+em em{font-style:normal}
+strong strong{font-weight:400}
 .keyseq{color:rgba(51,51,51,.8)}
-kbd{font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;display:inline-block;color:rgba(0,0,0,.8);font-size:.65em;line-height:1.45;background-color:#f7f7f7;border:1px solid #ccc;-webkit-border-radius:3px;border-radius:3px;-webkit-box-shadow:0 1px 0 rgba(0,0,0,.2),0 0 0 .1em white inset;box-shadow:0 1px 0 rgba(0,0,0,.2),0 0 0 .1em #fff inset;margin:0 .15em;padding:.2em .5em;vertical-align:middle;position:relative;top:-.1em;white-space:nowrap}
+kbd{font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;display:inline-block;color:rgba(0,0,0,.8);font-size:.65em;line-height:1.45;background:#f7f7f7;border:1px solid #ccc;-webkit-border-radius:3px;border-radius:3px;-webkit-box-shadow:0 1px 0 rgba(0,0,0,.2),0 0 0 .1em white inset;box-shadow:0 1px 0 rgba(0,0,0,.2),0 0 0 .1em #fff inset;margin:0 .15em;padding:.2em .5em;vertical-align:middle;position:relative;top:-.1em;white-space:nowrap}
 .keyseq kbd:first-child{margin-left:0}
 .keyseq kbd:last-child{margin-right:0}
-.menuseq,.menu{color:rgba(0,0,0,.8)}
-b.button:before,b.button:after{position:relative;top:-1px;font-weight:400}
-b.button:before{content:"[";padding:0 3px 0 2px}
-b.button:after{content:"]";padding:0 2px 0 3px}
+.menuseq,.menuref{color:#000}
+.menuseq b:not(.caret),.menuref{font-weight:inherit}
+.menuseq{word-spacing:-.02em}
+.menuseq b.caret{font-size:1.25em;line-height:.8}
+.menuseq i.caret{font-weight:bold;text-align:center;width:.45em}
+b.button::before,b.button::after{position:relative;top:-1px;font-weight:400}
+b.button::before{content:"[";padding:0 3px 0 2px}
+b.button::after{content:"]";padding:0 2px 0 3px}
 p a>code:hover{color:rgba(0,0,0,.9)}
 #header,#content,#footnotes,#footer{width:100%;margin-left:auto;margin-right:auto;margin-top:0;margin-bottom:0;max-width:62.5em;*zoom:1;position:relative;padding-left:.9375em;padding-right:.9375em}
-#header:before,#header:after,#content:before,#content:after,#footnotes:before,#footnotes:after,#footer:before,#footer:after{content:" ";display:table}
-#header:after,#content:after,#footnotes:after,#footer:after{clear:both}
+#header::before,#header::after,#content::before,#content::after,#footnotes::before,#footnotes::after,#footer::before,#footer::after{content:" ";display:table}
+#header::after,#content::after,#footnotes::after,#footer::after{clear:both}
 #content{margin-top:1.25em}
-#content:before{content:none}
+#content::before{content:none}
 #header>h1:first-child{color:rgba(0,0,0,.85);margin-top:2.25rem;margin-bottom:0}
-#header>h1:first-child+#toc{margin-top:8px;border-top:1px solid #ddddd8}
-#header>h1:only-child,body.toc2 #header>h1:nth-last-child(2){border-bottom:1px solid #ddddd8;padding-bottom:8px}
-#header .details{border-bottom:1px solid #ddddd8;line-height:1.45;padding-top:.25em;padding-bottom:.25em;padding-left:.25em;color:rgba(0,0,0,.6);display:-ms-flexbox;display:-webkit-flex;display:flex;-ms-flex-flow:row wrap;-webkit-flex-flow:row wrap;flex-flow:row wrap}
+#header>h1:first-child+#toc{margin-top:8px;border-top:1px solid #dddddf}
+#header>h1:only-child,body.toc2 #header>h1:nth-last-child(2){border-bottom:1px solid #dddddf;padding-bottom:8px}
+#header .details{border-bottom:1px solid #dddddf;line-height:1.45;padding-top:.25em;padding-bottom:.25em;padding-left:.25em;color:rgba(0,0,0,.6);display:-ms-flexbox;display:-webkit-flex;display:flex;-ms-flex-flow:row wrap;-webkit-flex-flow:row wrap;flex-flow:row wrap}
 #header .details span:first-child{margin-left:-.125em}
 #header .details span.email a{color:rgba(0,0,0,.85)}
 #header .details br{display:none}
-#header .details br+span:before{content:"\00a0\2013\00a0"}
-#header .details br+span.author:before{content:"\00a0\22c5\00a0";color:rgba(0,0,0,.85)}
-#header .details br+span#revremark:before{content:"\00a0|\00a0"}
+#header .details br+span::before{content:"\00a0\2013\00a0"}
+#header .details br+span.author::before{content:"\00a0\22c5\00a0";color:rgba(0,0,0,.85)}
+#header .details br+span#revremark::before{content:"\00a0|\00a0"}
 #header #revnumber{text-transform:capitalize}
-#header #revnumber:after{content:"\00a0"}
-#content>h1:first-child:not([class]){color:rgba(0,0,0,.85);border-bottom:1px solid #ddddd8;padding-bottom:8px;margin-top:0;padding-top:1rem;margin-bottom:1.25rem}
-#toc{border-bottom:1px solid #efefed;padding-bottom:.5em}
+#header #revnumber::after{content:"\00a0"}
+#content>h1:first-child:not([class]){color:rgba(0,0,0,.85);border-bottom:1px solid #dddddf;padding-bottom:8px;margin-top:0;padding-top:1rem;margin-bottom:1.25rem}
+#toc{border-bottom:1px solid #e7e7e9;padding-bottom:.5em}
 #toc>ul{margin-left:.125em}
 #toc ul.sectlevel0>li>a{font-style:italic}
 #toc ul.sectlevel0 ul.sectlevel1{margin:.5em 0}
@@ -163,16 +165,16 @@ p a>code:hover{color:rgba(0,0,0,.9)}
 #toc a{text-decoration:none}
 #toc a:active{text-decoration:underline}
 #toctitle{color:#7a2518;font-size:1.2em}
-@media only screen and (min-width:768px){#toctitle{font-size:1.375em}
+@media screen and (min-width:768px){#toctitle{font-size:1.375em}
 body.toc2{padding-left:15em;padding-right:0}
-#toc.toc2{margin-top:0!important;background-color:#f8f8f7;position:fixed;width:15em;left:0;top:0;border-right:1px solid #efefed;border-top-width:0!important;border-bottom-width:0!important;z-index:1000;padding:1.25em 1em;height:100%;overflow:auto}
+#toc.toc2{margin-top:0!important;background:#f8f8f7;position:fixed;width:15em;left:0;top:0;border-right:1px solid #e7e7e9;border-top-width:0!important;border-bottom-width:0!important;z-index:1000;padding:1.25em 1em;height:100%;overflow:auto}
 #toc.toc2 #toctitle{margin-top:0;margin-bottom:.8rem;font-size:1.2em}
 #toc.toc2>ul{font-size:.9em;margin-bottom:0}
 #toc.toc2 ul ul{margin-left:0;padding-left:1em}
 #toc.toc2 ul.sectlevel0 ul.sectlevel1{padding-left:0;margin-top:.5em;margin-bottom:.5em}
 body.toc2.toc-right{padding-left:0;padding-right:15em}
-body.toc2.toc-right #toc.toc2{border-right-width:0;border-left:1px solid #efefed;left:auto;right:0}}
-@media only screen and (min-width:1280px){body.toc2{padding-left:20em;padding-right:0}
+body.toc2.toc-right #toc.toc2{border-right-width:0;border-left:1px solid #e7e7e9;left:auto;right:0}}
+@media screen and (min-width:1280px){body.toc2{padding-left:20em;padding-right:0}
 #toc.toc2{width:20em}
 #toc.toc2 #toctitle{font-size:1.375em}
 #toc.toc2>ul{font-size:.95em}
@@ -181,89 +183,100 @@ body.toc2.toc-right{padding-left:0;padding-right:20em}}
 #content #toc{border-style:solid;border-width:1px;border-color:#e0e0dc;margin-bottom:1.25em;padding:1.25em;background:#f8f8f7;-webkit-border-radius:4px;border-radius:4px}
 #content #toc>:first-child{margin-top:0}
 #content #toc>:last-child{margin-bottom:0}
-#footer{max-width:100%;background-color:rgba(0,0,0,.8);padding:1.25em}
+#footer{max-width:100%;background:rgba(0,0,0,.8);padding:1.25em}
 #footer-text{color:rgba(255,255,255,.8);line-height:1.44}
+#content{margin-bottom:.625em}
 .sect1{padding-bottom:.625em}
-@media only screen and (min-width:768px){.sect1{padding-bottom:1.25em}}
-.sect1+.sect1{border-top:1px solid #efefed}
+@media screen and (min-width:768px){#content{margin-bottom:1.25em}
+.sect1{padding-bottom:1.25em}}
+.sect1:last-child{padding-bottom:0}
+.sect1+.sect1{border-top:1px solid #e7e7e9}
 #content h1>a.anchor,h2>a.anchor,h3>a.anchor,#toctitle>a.anchor,.sidebarblock>.content>.title>a.anchor,h4>a.anchor,h5>a.anchor,h6>a.anchor{position:absolute;z-index:1001;width:1.5ex;margin-left:-1.5ex;display:block;text-decoration:none!important;visibility:hidden;text-align:center;font-weight:400}
-#content h1>a.anchor:before,h2>a.anchor:before,h3>a.anchor:before,#toctitle>a.anchor:before,.sidebarblock>.content>.title>a.anchor:before,h4>a.anchor:before,h5>a.anchor:before,h6>a.anchor:before{content:"\00A7";font-size:.85em;display:block;padding-top:.1em}
+#content h1>a.anchor::before,h2>a.anchor::before,h3>a.anchor::before,#toctitle>a.anchor::before,.sidebarblock>.content>.title>a.anchor::before,h4>a.anchor::before,h5>a.anchor::before,h6>a.anchor::before{content:"\00A7";font-size:.85em;display:block;padding-top:.1em}
 #content h1:hover>a.anchor,#content h1>a.anchor:hover,h2:hover>a.anchor,h2>a.anchor:hover,h3:hover>a.anchor,#toctitle:hover>a.anchor,.sidebarblock>.content>.title:hover>a.anchor,h3>a.anchor:hover,#toctitle>a.anchor:hover,.sidebarblock>.content>.title>a.anchor:hover,h4:hover>a.anchor,h4>a.anchor:hover,h5:hover>a.anchor,h5>a.anchor:hover,h6:hover>a.anchor,h6>a.anchor:hover{visibility:visible}
 #content h1>a.link,h2>a.link,h3>a.link,#toctitle>a.link,.sidebarblock>.content>.title>a.link,h4>a.link,h5>a.link,h6>a.link{color:#ba3925;text-decoration:none}
 #content h1>a.link:hover,h2>a.link:hover,h3>a.link:hover,#toctitle>a.link:hover,.sidebarblock>.content>.title>a.link:hover,h4>a.link:hover,h5>a.link:hover,h6>a.link:hover{color:#a53221}
-.audioblock,.imageblock,.literalblock,.listingblock,.stemblock,.videoblock{margin-bottom:1.25em}
+details,.audioblock,.imageblock,.literalblock,.listingblock,.stemblock,.videoblock{margin-bottom:1.25em}
+details>summary:first-of-type{cursor:pointer;display:list-item;outline:none;margin-bottom:.75em}
 .admonitionblock td.content>.title,.audioblock>.title,.exampleblock>.title,.imageblock>.title,.listingblock>.title,.literalblock>.title,.stemblock>.title,.openblock>.title,.paragraph>.title,.quoteblock>.title,table.tableblock>.title,.verseblock>.title,.videoblock>.title,.dlist>.title,.olist>.title,.ulist>.title,.qlist>.title,.hdlist>.title{text-rendering:optimizeLegibility;text-align:left;font-family:"Noto Serif","DejaVu Serif",serif;font-size:1rem;font-style:italic}
-table.tableblock>caption.title{white-space:nowrap;overflow:visible;max-width:0}
-.paragraph.lead>p,#preamble>.sectionbody>.paragraph:first-of-type p{color:rgba(0,0,0,.85)}
-table.tableblock #preamble>.sectionbody>.paragraph:first-of-type p{font-size:inherit}
+table.tableblock.fit-content>caption.title{white-space:nowrap;width:0}
+.paragraph.lead>p,#preamble>.sectionbody>[class="paragraph"]:first-of-type p{font-size:1.21875em;line-height:1.6;color:rgba(0,0,0,.85)}
+table.tableblock #preamble>.sectionbody>[class="paragraph"]:first-of-type p{font-size:inherit}
 .admonitionblock>table{border-collapse:separate;border:0;background:none;width:100%}
 .admonitionblock>table td.icon{text-align:center;width:80px}
 .admonitionblock>table td.icon img{max-width:none}
 .admonitionblock>table td.icon .title{font-weight:bold;font-family:"Open Sans","DejaVu Sans",sans-serif;text-transform:uppercase}
-.admonitionblock>table td.content{padding-left:1.125em;padding-right:1.25em;border-left:1px solid #ddddd8;color:rgba(0,0,0,.6)}
+.admonitionblock>table td.content{padding-left:1.125em;padding-right:1.25em;border-left:1px solid #dddddf;color:rgba(0,0,0,.6)}
 .admonitionblock>table td.content>:last-child>:last-child{margin-bottom:0}
 .exampleblock>.content{border-style:solid;border-width:1px;border-color:#e6e6e6;margin-bottom:1.25em;padding:1.25em;background:#fff;-webkit-border-radius:4px;border-radius:4px}
 .exampleblock>.content>:first-child{margin-top:0}
 .exampleblock>.content>:last-child{margin-bottom:0}
-.sidebarblock{border-style:solid;border-width:1px;border-color:#e0e0dc;margin-bottom:1.25em;padding:1.25em;background:#f8f8f7;-webkit-border-radius:4px;border-radius:4px}
+.sidebarblock{border-style:solid;border-width:1px;border-color:#dbdbd6;margin-bottom:1.25em;padding:1.25em;background:#f3f3f2;-webkit-border-radius:4px;border-radius:4px}
 .sidebarblock>:first-child{margin-top:0}
 .sidebarblock>:last-child{margin-bottom:0}
 .sidebarblock>.content>.title{color:#7a2518;margin-top:0;text-align:center}
 .exampleblock>.content>:last-child>:last-child,.exampleblock>.content .olist>ol>li:last-child>:last-child,.exampleblock>.content .ulist>ul>li:last-child>:last-child,.exampleblock>.content .qlist>ol>li:last-child>:last-child,.sidebarblock>.content>:last-child>:last-child,.sidebarblock>.content .olist>ol>li:last-child>:last-child,.sidebarblock>.content .ulist>ul>li:last-child>:last-child,.sidebarblock>.content .qlist>ol>li:last-child>:last-child{margin-bottom:0}
-.literalblock pre,.listingblock pre:not(.highlight),.listingblock pre[class="highlight"],.listingblock pre[class^="highlight "],.listingblock pre.CodeRay,.listingblock pre.prettyprint{background:#f7f7f8}
-.sidebarblock .literalblock pre,.sidebarblock .listingblock pre:not(.highlight),.sidebarblock .listingblock pre[class="highlight"],.sidebarblock .listingblock pre[class^="highlight "],.sidebarblock .listingblock pre.CodeRay,.sidebarblock .listingblock pre.prettyprint{background:#f2f1f1}
-.literalblock pre,.literalblock pre[class],.listingblock pre,.listingblock pre[class]{-webkit-border-radius:4px;border-radius:4px;word-wrap:break-word;padding:1em;font-size:.8125em}
-.literalblock pre.nowrap,.literalblock pre[class].nowrap,.listingblock pre.nowrap,.listingblock pre[class].nowrap{overflow-x:auto;white-space:pre;word-wrap:normal}
-@media only screen and (min-width:768px){.literalblock pre,.literalblock pre[class],.listingblock pre,.listingblock pre[class]{font-size:.90625em}}
-@media only screen and (min-width:1280px){.literalblock pre,.literalblock pre[class],.listingblock pre,.listingblock pre[class]{font-size:1em}}
-.literalblock.output pre{color:#f7f7f8;background-color:rgba(0,0,0,.9)}
+.literalblock pre,.listingblock>.content>pre{-webkit-border-radius:4px;border-radius:4px;word-wrap:break-word;overflow-x:auto;padding:1em;font-size:.8125em}
+@media screen and (min-width:768px){.literalblock pre,.listingblock>.content>pre{font-size:.90625em}}
+@media screen and (min-width:1280px){.literalblock pre,.listingblock>.content>pre{font-size:1em}}
+.literalblock pre,.listingblock>.content>pre:not(.highlight),.listingblock>.content>pre[class="highlight"],.listingblock>.content>pre[class^="highlight "]{background:#f7f7f8}
+.literalblock.output pre{color:#f7f7f8;background:rgba(0,0,0,.9)}
+.listingblock>.content{position:relative}
+.listingblock code[data-lang]::before{display:none;content:attr(data-lang);position:absolute;font-size:.75em;top:.425rem;right:.5rem;line-height:1;text-transform:uppercase;color:inherit;opacity:.5}
+.listingblock:hover code[data-lang]::before{display:block}
+.listingblock.terminal pre .command::before{content:attr(data-prompt);padding-right:.5em;color:inherit;opacity:.5}
+.listingblock.terminal pre .command:not([data-prompt])::before{content:"$"}
 .listingblock pre.highlightjs{padding:0}
 .listingblock pre.highlightjs>code{padding:1em;-webkit-border-radius:4px;border-radius:4px}
 .listingblock pre.prettyprint{border-width:0}
-.listingblock>.content{position:relative}
-.listingblock code[data-lang]:before{display:none;content:attr(data-lang);position:absolute;font-size:.75em;top:.425rem;right:.5rem;line-height:1;text-transform:uppercase;color:#999}
-.listingblock:hover code[data-lang]:before{display:block}
-.listingblock.terminal pre .command:before{content:attr(data-prompt);padding-right:.5em;color:#999}
-.listingblock.terminal pre .command:not([data-prompt]):before{content:"$"}
-table.pyhltable{border-collapse:separate;border:0;margin-bottom:0;background:none}
-table.pyhltable td{vertical-align:top;padding-top:0;padding-bottom:0;line-height:1.45}
-table.pyhltable td.code{padding-left:.75em;padding-right:0}
-pre.pygments .lineno,table.pyhltable td:not(.code){color:#999;padding-left:0;padding-right:.5em;border-right:1px solid #ddddd8}
-pre.pygments .lineno{display:inline-block;margin-right:.25em}
-table.pyhltable .linenodiv{background:none!important;padding-right:0!important}
+.prettyprint{background:#f7f7f8}
+pre.prettyprint .linenums{line-height:1.45;margin-left:2em}
+pre.prettyprint li{background:none;list-style-type:inherit;padding-left:0}
+pre.prettyprint li code[data-lang]::before{opacity:1}
+pre.prettyprint li:not(:first-child) code[data-lang]::before{display:none}
+table.linenotable{border-collapse:separate;border:0;margin-bottom:0;background:none}
+table.linenotable td[class]{color:inherit;vertical-align:top;padding:0;line-height:inherit;white-space:normal}
+table.linenotable td.code{padding-left:.75em}
+table.linenotable td.linenos{border-right:1px solid currentColor;opacity:.35;padding-right:.5em}
+pre.pygments .lineno{border-right:1px solid currentColor;opacity:.35;display:inline-block;margin-right:.75em}
+pre.pygments .lineno::before{content:"";margin-right:-.125em}
 .quoteblock{margin:0 1em 1.25em 1.5em;display:table}
 .quoteblock>.title{margin-left:-1.5em;margin-bottom:.75em}
-.quoteblock blockquote,.quoteblock blockquote p{color:rgba(0,0,0,.85);font-size:1.15rem;line-height:1.75;word-spacing:.1em;letter-spacing:0;font-style:italic;text-align:justify}
+.quoteblock blockquote,.quoteblock p{color:rgba(0,0,0,.85);font-size:1.15rem;line-height:1.75;word-spacing:.1em;letter-spacing:0;font-style:italic;text-align:justify}
 .quoteblock blockquote{margin:0;padding:0;border:0}
-.quoteblock blockquote:before{content:"\201c";float:left;font-size:2.75em;font-weight:bold;line-height:.6em;margin-left:-.6em;color:#7a2518;text-shadow:0 1px 2px rgba(0,0,0,.1)}
+.quoteblock blockquote::before{content:"\201c";float:left;font-size:2.75em;font-weight:bold;line-height:.6em;margin-left:-.6em;color:#7a2518;text-shadow:0 1px 2px rgba(0,0,0,.1)}
 .quoteblock blockquote>.paragraph:last-child p{margin-bottom:0}
-.quoteblock .attribution{margin-top:.5em;margin-right:.5ex;text-align:right}
-.quoteblock .quoteblock{margin-left:0;margin-right:0;padding:.5em 0;border-left:3px solid rgba(0,0,0,.6)}
-.quoteblock .quoteblock blockquote{padding:0 0 0 .75em}
-.quoteblock .quoteblock blockquote:before{display:none}
-.verseblock{margin:0 1em 1.25em 1em}
+.quoteblock .attribution{margin-top:.75em;margin-right:.5ex;text-align:right}
+.verseblock{margin:0 1em 1.25em}
 .verseblock pre{font-family:"Open Sans","DejaVu Sans",sans;font-size:1.15rem;color:rgba(0,0,0,.85);font-weight:300;text-rendering:optimizeLegibility}
 .verseblock pre strong{font-weight:400}
 .verseblock .attribution{margin-top:1.25rem;margin-left:.5ex}
 .quoteblock .attribution,.verseblock .attribution{font-size:.9375em;line-height:1.45;font-style:italic}
 .quoteblock .attribution br,.verseblock .attribution br{display:none}
 .quoteblock .attribution cite,.verseblock .attribution cite{display:block;letter-spacing:-.025em;color:rgba(0,0,0,.6)}
-.quoteblock.abstract{margin:0 0 1.25em 0;display:block}
-.quoteblock.abstract blockquote,.quoteblock.abstract blockquote p{text-align:left;word-spacing:0}
-.quoteblock.abstract blockquote:before,.quoteblock.abstract blockquote p:first-of-type:before{display:none}
+.quoteblock.abstract blockquote::before,.quoteblock.excerpt blockquote::before,.quoteblock .quoteblock blockquote::before{display:none}
+.quoteblock.abstract blockquote,.quoteblock.abstract p,.quoteblock.excerpt blockquote,.quoteblock.excerpt p,.quoteblock .quoteblock blockquote,.quoteblock .quoteblock p{line-height:1.6;word-spacing:0}
+.quoteblock.abstract{margin:0 1em 1.25em;display:block}
+.quoteblock.abstract>.title{margin:0 0 .375em;font-size:1.15em;text-align:center}
+.quoteblock.excerpt,.quoteblock .quoteblock{margin:0 0 1.25em;padding:0 0 .25em 1em;border-left:.25em solid #dddddf}
+.quoteblock.excerpt blockquote,.quoteblock.excerpt p,.quoteblock .quoteblock blockquote,.quoteblock .quoteblock p{color:inherit;font-size:1.0625rem}
+.quoteblock.excerpt .attribution,.quoteblock .quoteblock .attribution{color:inherit;text-align:left;margin-right:0}
 table.tableblock{max-width:100%;border-collapse:separate}
-table.tableblock td>.paragraph:last-child p>p:last-child,table.tableblock th>p:last-child,table.tableblock td>p:last-child{margin-bottom:0}
+p.tableblock:last-child{margin-bottom:0}
+td.tableblock>.content>:last-child{margin-bottom:-1.25em}
+td.tableblock>.content>:last-child.sidebarblock{margin-bottom:0}
 table.tableblock,th.tableblock,td.tableblock{border:0 solid #dedede}
-table.grid-all th.tableblock,table.grid-all td.tableblock{border-width:0 1px 1px 0}
-table.grid-all tfoot>tr>th.tableblock,table.grid-all tfoot>tr>td.tableblock{border-width:1px 1px 0 0}
-table.grid-cols th.tableblock,table.grid-cols td.tableblock{border-width:0 1px 0 0}
-table.grid-all *>tr>.tableblock:last-child,table.grid-cols *>tr>.tableblock:last-child{border-right-width:0}
-table.grid-rows th.tableblock,table.grid-rows td.tableblock{border-width:0 0 1px 0}
-table.grid-all tbody>tr:last-child>th.tableblock,table.grid-all tbody>tr:last-child>td.tableblock,table.grid-all thead:last-child>tr>th.tableblock,table.grid-rows tbody>tr:last-child>th.tableblock,table.grid-rows tbody>tr:last-child>td.tableblock,table.grid-rows thead:last-child>tr>th.tableblock{border-bottom-width:0}
-table.grid-rows tfoot>tr>th.tableblock,table.grid-rows tfoot>tr>td.tableblock{border-width:1px 0 0 0}
+table.grid-all>thead>tr>.tableblock,table.grid-all>tbody>tr>.tableblock{border-width:0 1px 1px 0}
+table.grid-all>tfoot>tr>.tableblock{border-width:1px 1px 0 0}
+table.grid-cols>*>tr>.tableblock{border-width:0 1px 0 0}
+table.grid-rows>thead>tr>.tableblock,table.grid-rows>tbody>tr>.tableblock{border-width:0 0 1px}
+table.grid-rows>tfoot>tr>.tableblock{border-width:1px 0 0}
+table.grid-all>*>tr>.tableblock:last-child,table.grid-cols>*>tr>.tableblock:last-child{border-right-width:0}
+table.grid-all>tbody>tr:last-child>.tableblock,table.grid-all>thead:last-child>tr>.tableblock,table.grid-rows>tbody>tr:last-child>.tableblock,table.grid-rows>thead:last-child>tr>.tableblock{border-bottom-width:0}
 table.frame-all{border-width:1px}
 table.frame-sides{border-width:0 1px}
-table.frame-topbot{border-width:1px 0}
+table.frame-topbot,table.frame-ends{border-width:1px 0}
+table.stripes-all tr,table.stripes-odd tr:nth-of-type(odd),table.stripes-even tr:nth-of-type(even),table.stripes-hover tr:hover{background:#f8f8f7}
 th.halign-left,td.halign-left{text-align:left}
 th.halign-right,td.halign-right{text-align:right}
 th.halign-center,td.halign-center{text-align:center}
@@ -275,19 +288,19 @@ tbody tr th{display:table-cell;line-height:1.6;background:#f7f8f7}
 tbody tr th,tbody tr th p,tfoot tr th,tfoot tr th p{color:rgba(0,0,0,.8);font-weight:bold}
 p.tableblock>code:only-child{background:none;padding:0}
 p.tableblock{font-size:1em}
-td>div.verse{white-space:pre}
 ol{margin-left:1.75em}
 ul li ol{margin-left:1.5em}
 dl dd{margin-left:1.125em}
 dl dd:last-child,dl dd:last-child>:last-child{margin-bottom:0}
 ol>li p,ul>li p,ul dd,ol dd,.olist .olist,.ulist .ulist,.ulist .olist,.olist .ulist{margin-bottom:.625em}
-ul.unstyled,ol.unnumbered,ul.checklist,ul.none{list-style-type:none}
-ul.unstyled,ol.unnumbered,ul.checklist{margin-left:.625em}
-ul.checklist li>p:first-child>.fa-square-o:first-child,ul.checklist li>p:first-child>.fa-check-square-o:first-child{width:1em;font-size:.85em}
-ul.checklist li>p:first-child>input[type="checkbox"]:first-child{width:1em;position:relative;top:1px}
-ul.inline{margin:0 auto .625em auto;margin-left:-1.375em;margin-right:0;padding:0;list-style:none;overflow:hidden}
-ul.inline>li{list-style:none;float:left;margin-left:1.375em;display:block}
-ul.inline>li>*{display:block}
+ul.checklist,ul.none,ol.none,ul.no-bullet,ol.no-bullet,ol.unnumbered,ul.unstyled,ol.unstyled{list-style-type:none}
+ul.no-bullet,ol.no-bullet,ol.unnumbered{margin-left:.625em}
+ul.unstyled,ol.unstyled{margin-left:0}
+ul.checklist{margin-left:.625em}
+ul.checklist li>p:first-child>.fa-square-o:first-child,ul.checklist li>p:first-child>.fa-check-square-o:first-child{width:1.25em;font-size:.8em;position:relative;bottom:.125em}
+ul.checklist li>p:first-child>input[type="checkbox"]:first-child{margin-right:.25em}
+ul.inline{display:-ms-flexbox;display:-webkit-box;display:flex;-ms-flex-flow:row wrap;-webkit-flex-flow:row wrap;flex-flow:row wrap;list-style:none;margin:0 0 .625em -1.25em}
+ul.inline>li{margin-left:1.25em}
 .unstyled dl dt{font-weight:400;font-style:normal}
 ol.arabic{list-style-type:decimal}
 ol.decimal{list-style-type:decimal-leading-zero}
@@ -301,11 +314,12 @@ ol.lowergreek{list-style-type:lower-greek}
 td.hdlist1,td.hdlist2{vertical-align:top;padding:0 .625em}
 td.hdlist1{font-weight:bold;padding-bottom:1.25em}
 .literalblock+.colist,.listingblock+.colist{margin-top:-.5em}
-.colist>table tr>td:first-of-type{padding:0 .75em;line-height:1}
-.colist>table tr>td:last-of-type{padding:.25em 0}
+.colist td:not([class]):first-child{padding:.4em .75em 0;line-height:1;vertical-align:top}
+.colist td:not([class]):first-child img{max-width:none}
+.colist td:not([class]):last-child{padding:.25em 0}
 .thumb,.th{line-height:0;display:inline-block;border:solid 4px #fff;-webkit-box-shadow:0 0 0 1px #ddd;box-shadow:0 0 0 1px #ddd}
-.imageblock.left,.imageblock[style*="float: left"]{margin:.25em .625em 1.25em 0}
-.imageblock.right,.imageblock[style*="float: right"]{margin:.25em 0 1.25em .625em}
+.imageblock.left{margin:.25em .625em 1.25em 0}
+.imageblock.right{margin:.25em 0 1.25em .625em}
 .imageblock>.title{margin-bottom:0}
 .imageblock.thumb,.imageblock.th{border-width:6px}
 .imageblock.thumb>.title,.imageblock.th>.title{padding:0 .125em}
@@ -318,9 +332,9 @@ sup.footnote,sup.footnoteref{font-size:.875em;position:static;vertical-align:sup
 sup.footnote a,sup.footnoteref a{text-decoration:none}
 sup.footnote a:active,sup.footnoteref a:active{text-decoration:underline}
 #footnotes{padding-top:.75em;padding-bottom:.75em;margin-bottom:.625em}
-#footnotes hr{width:20%;min-width:6.25em;margin:-.25em 0 .75em 0;border-width:1px 0 0 0}
-#footnotes .footnote{padding:0 .375em 0 .225em;line-height:1.3334;font-size:.875em;margin-left:1.2em;text-indent:-1.05em;margin-bottom:.2em}
-#footnotes .footnote a:first-of-type{font-weight:bold;text-decoration:none}
+#footnotes hr{width:20%;min-width:6.25em;margin:-.25em 0 .75em;border-width:1px 0 0}
+#footnotes .footnote{padding:0 .375em 0 .225em;line-height:1.3334;font-size:.875em;margin-left:1.2em;margin-bottom:.2em}
+#footnotes .footnote a:first-of-type{font-weight:bold;text-decoration:none;margin-left:-1.05em}
 #footnotes .footnote:last-of-type{margin-bottom:0}
 #content #footnotes{margin-top:-.625em;margin-bottom:0;padding:.75em 0}
 .gist .file-data>table{border:0;background:#fff;width:100%;margin-bottom:0}
@@ -332,48 +346,49 @@ div.unbreakable{page-break-inside:avoid}
 .overline{text-decoration:overline}
 .line-through{text-decoration:line-through}
 .aqua{color:#00bfbf}
-.aqua-background{background-color:#00fafa}
+.aqua-background{background:#00fafa}
 .black{color:#000}
-.black-background{background-color:#000}
+.black-background{background:#000}
 .blue{color:#0000bf}
-.blue-background{background-color:#0000fa}
+.blue-background{background:#0000fa}
 .fuchsia{color:#bf00bf}
-.fuchsia-background{background-color:#fa00fa}
+.fuchsia-background{background:#fa00fa}
 .gray{color:#606060}
-.gray-background{background-color:#7d7d7d}
+.gray-background{background:#7d7d7d}
 .green{color:#006000}
-.green-background{background-color:#007d00}
+.green-background{background:#007d00}
 .lime{color:#00bf00}
-.lime-background{background-color:#00fa00}
+.lime-background{background:#00fa00}
 .maroon{color:#600000}
-.maroon-background{background-color:#7d0000}
+.maroon-background{background:#7d0000}
 .navy{color:#000060}
-.navy-background{background-color:#00007d}
+.navy-background{background:#00007d}
 .olive{color:#606000}
-.olive-background{background-color:#7d7d00}
+.olive-background{background:#7d7d00}
 .purple{color:#600060}
-.purple-background{background-color:#7d007d}
+.purple-background{background:#7d007d}
 .red{color:#bf0000}
-.red-background{background-color:#fa0000}
+.red-background{background:#fa0000}
 .silver{color:#909090}
-.silver-background{background-color:#bcbcbc}
+.silver-background{background:#bcbcbc}
 .teal{color:#006060}
-.teal-background{background-color:#007d7d}
+.teal-background{background:#007d7d}
 .white{color:#bfbfbf}
-.white-background{background-color:#fafafa}
+.white-background{background:#fafafa}
 .yellow{color:#bfbf00}
-.yellow-background{background-color:#fafa00}
+.yellow-background{background:#fafa00}
 span.icon>.fa{cursor:default}
+a span.icon>.fa{cursor:inherit}
 .admonitionblock td.icon [class^="fa icon-"]{font-size:2.5em;text-shadow:1px 1px 2px rgba(0,0,0,.5);cursor:default}
-.admonitionblock td.icon .icon-note:before{content:"\f05a";color:#19407c}
-.admonitionblock td.icon .icon-tip:before{content:"\f0eb";text-shadow:1px 1px 2px rgba(155,155,0,.8);color:#111}
-.admonitionblock td.icon .icon-warning:before{content:"\f071";color:#bf6900}
-.admonitionblock td.icon .icon-caution:before{content:"\f06d";color:#bf3400}
-.admonitionblock td.icon .icon-important:before{content:"\f06a";color:#bf0000}
-.conum[data-value]{display:inline-block;color:#fff!important;background-color:rgba(0,0,0,.8);-webkit-border-radius:100px;border-radius:100px;text-align:center;font-size:.75em;width:1.67em;height:1.67em;line-height:1.67em;font-family:"Open Sans","DejaVu Sans",sans-serif;font-style:normal;font-weight:bold}
+.admonitionblock td.icon .icon-note::before{content:"\f05a";color:#19407c}
+.admonitionblock td.icon .icon-tip::before{content:"\f0eb";text-shadow:1px 1px 2px rgba(155,155,0,.8);color:#111}
+.admonitionblock td.icon .icon-warning::before{content:"\f071";color:#bf6900}
+.admonitionblock td.icon .icon-caution::before{content:"\f06d";color:#bf3400}
+.admonitionblock td.icon .icon-important::before{content:"\f06a";color:#bf0000}
+.conum[data-value]{display:inline-block;color:#fff!important;background:rgba(0,0,0,.8);-webkit-border-radius:100px;border-radius:100px;text-align:center;font-size:.75em;width:1.67em;height:1.67em;line-height:1.67em;font-family:"Open Sans","DejaVu Sans",sans-serif;font-style:normal;font-weight:bold}
 .conum[data-value] *{color:#fff!important}
 .conum[data-value]+b{display:none}
-.conum[data-value]:after{content:attr(data-value)}
+.conum[data-value]::after{content:attr(data-value)}
 pre .conum[data-value]{position:relative;top:-.125em}
 b.conum *{color:inherit!important}
 .conum:not([data-value]):empty{display:none}
@@ -383,41 +398,44 @@ p strong,td.content strong,div.footnote strong{letter-spacing:-.005em}
 p,blockquote,dt,td.content,span.alt{font-size:1.0625rem}
 p{margin-bottom:1.25rem}
 .sidebarblock p,.sidebarblock dt,.sidebarblock td.content,p.tableblock{font-size:1em}
-.exampleblock>.content{background-color:#fffef7;border-color:#e0e0dc;-webkit-box-shadow:0 1px 4px #e0e0dc;box-shadow:0 1px 4px #e0e0dc}
+.exampleblock>.content{background:#fffef7;border-color:#e0e0dc;-webkit-box-shadow:0 1px 4px #e0e0dc;box-shadow:0 1px 4px #e0e0dc}
 .print-only{display:none!important}
-@media print{@page{margin:1.25cm .75cm}
-*{-webkit-box-shadow:none!important;box-shadow:none!important;text-shadow:none!important}
+@page{margin:1.25cm .75cm}
+@media print{*{-webkit-box-shadow:none!important;box-shadow:none!important;text-shadow:none!important}
+html{font-size:80%}
 a{color:inherit!important;text-decoration:underline!important}
 a.bare,a[href^="#"],a[href^="mailto:"]{text-decoration:none!important}
-a[href^="http:"]:not(.bare):after,a[href^="https:"]:not(.bare):after{content:"(" attr(href) ")";display:inline-block;font-size:.875em;padding-left:.25em}
-abbr[title]:after{content:" (" attr(title) ")"}
+a[href^="http:"]:not(.bare)::after,a[href^="https:"]:not(.bare)::after{content:"(" attr(href) ")";display:inline-block;font-size:.875em;padding-left:.25em}
+abbr[title]::after{content:" (" attr(title) ")"}
 pre,blockquote,tr,img,object,svg{page-break-inside:avoid}
 thead{display:table-header-group}
 svg{max-width:100%}
 p,blockquote,dt,td.content{font-size:1em;orphans:3;widows:3}
 h2,h3,#toctitle,.sidebarblock>.content>.title{page-break-after:avoid}
 #toc,.sidebarblock,.exampleblock>.content{background:none!important}
-#toc{border-bottom:1px solid #ddddd8!important;padding-bottom:0!important}
-.sect1{padding-bottom:0!important}
-.sect1+.sect1{border:0!important}
-#header>h1:first-child{margin-top:1.25rem}
+#toc{border-bottom:1px solid #dddddf!important;padding-bottom:0!important}
 body.book #header{text-align:center}
-body.book #header>h1:first-child{border:0!important;margin:2.5em 0 1em 0}
+body.book #header>h1:first-child{border:0!important;margin:2.5em 0 1em}
 body.book #header .details{border:0!important;display:block;padding:0!important}
 body.book #header .details span:first-child{margin-left:0!important}
 body.book #header .details br{display:block}
-body.book #header .details br+span:before{content:none!important}
+body.book #header .details br+span::before{content:none!important}
 body.book #toc{border:0!important;text-align:left!important;padding:0!important;margin:0!important}
 body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-break-before:always}
-.listingblock code[data-lang]:before{display:block}
-#footer{background:none!important;padding:0 .9375em}
-#footer-text{color:rgba(0,0,0,.6)!important;font-size:.9em}
+.listingblock code[data-lang]::before{display:block}
+#footer{padding:0 .9375em}
 .hide-on-print{display:none!important}
 .print-only{display:block!important}
 .hide-for-print{display:none!important}
 .show-for-print{display:inherit!important}}
+@media print,amzn-kf8{#header>h1:first-child{margin-top:1.25rem}
+.sect1{padding:0!important}
+.sect1+.sect1{border:0}
+#footer{background:none}
+#footer-text{color:rgba(0,0,0,.6);font-size:.9em}}
+@media amzn-kf8{#header,#content,#footnotes,#footer{padding:0}}
 </style>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 <body class="book toc2 toc-right">
 <div id="header">
@@ -429,84 +447,91 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="toctitle">Tabla de contenidos</div>
 <ul class="sectlevel1">
 <li><a href="#trueresumen">Resumen</a></li>
-<li><a href="#trueintroducci-n">1. Introducción</a></li>
-<li><a href="#truecreaci-n-del-proyecto">2. Creación del proyecto</a>
+<li><a href="#trueintroducción">1. Introducción</a></li>
+<li><a href="#truecreación-del-proyecto">2. Creación del proyecto</a>
 <ul class="sectlevel2">
 <li><a href="#truefuncionamiento-servicios-y-controladores">2.1. Funcionamiento (Servicios y Controladores)</a></li>
 <li><a href="#truedefinir-un-prefijo-para-la-api">2.2. Definir un prefijo para la API.</a></li>
 </ul>
 </li>
-<li><a href="#truecreaci-n-de-nuestro-primer-servicio-y-controlador">3. Creación de nuestro primer servicio y controlador</a>
+<li><a href="#truecreación-de-nuestro-primer-servicio-y-controlador">3. Creación de nuestro primer servicio y controlador</a>
 <ul class="sectlevel2">
 <li><a href="#trueel-servicio">3.1. El servicio</a></li>
 <li><a href="#trueel-controlador">3.2. El controlador</a></li>
 </ul>
 </li>
-<li><a href="#truecreaci-n-de-la-primera-versi-n-de-los-endpoints">4. Creación de la primera versión de los endpoints</a>
+<li><a href="#truecreación-de-la-primera-versión-de-los-endpoints">4. Creación de la primera versión de los endpoints</a>
 <ul class="sectlevel2">
-<li><a href="#truerecuperaci-n-de-un-libro">4.1. Recuperación de un libro</a></li>
-<li><a href="#truefiltrado-mediante-par-metros-recuperaci-n-de-todos-los-libros-en-orden-descendente">4.2. Filtrado mediante parámetros. Recuperación de todos los libros en orden descendente.</a></li>
-<li><a href="#truecreaci-n-de-un-libro">4.3. Creación de un libro</a></li>
-<li><a href="#trueeliminaci-n-de-un-libro">4.4. Eliminación de un libro</a></li>
-<li><a href="#truemodificaci-n-de-un-libro">4.5. Modificación de un libro</a></li>
+<li><a href="#truerecuperación-de-un-libro">4.1. Recuperación de un libro</a></li>
+<li><a href="#truefiltrado-mediante-parámetros-recuperación-de-todos-los-libros-en-orden-descendente">4.2. Filtrado mediante parámetros. Recuperación de todos los libros en orden descendente.</a></li>
+<li><a href="#truecreación-de-un-libro">4.3. Creación de un libro</a></li>
+<li><a href="#trueeliminación-de-un-libro">4.4. Eliminación de un libro</a></li>
+<li><a href="#truemodificación-de-un-libro">4.5. Modificación de un libro</a></li>
 </ul>
 </li>
 <li><a href="#truetipado-de-objetos">5. Tipado de objetos</a>
 <ul class="sectlevel2">
-<li><a href="#truecreaci-n-de-una-interface-para-libros">5.1. Creación de una interface para libros</a></li>
-<li><a href="#truecreaci-n-de-un-dto-para-libros">5.2. Creación de un DTO para libros</a></li>
-<li><a href="#truemodificaci-n-del-controlador-para-el-uso-de-tipos">5.3. Modificación del controlador para el uso de tipos</a></li>
-<li><a href="#truemodificaci-n-del-servicio-para-el-uso-de-tipos">5.4. Modificación del servicio para el uso de tipos</a></li>
+<li><a href="#truecreación-de-una-interface-para-libros">5.1. Creación de una interface para libros</a></li>
+<li><a href="#truecreación-de-un-dto-para-libros">5.2. Creación de un DTO para libros</a></li>
+<li><a href="#truemodificación-del-controlador-para-el-uso-de-tipos">5.3. Modificación del controlador para el uso de tipos</a></li>
+<li><a href="#truemodificación-del-servicio-para-el-uso-de-tipos">5.4. Modificación del servicio para el uso de tipos</a></li>
 </ul>
 </li>
-<li><a href="#truefinalizaci-n-del-mockeado">6. Finalización del mockeado</a>
+<li><a href="#truefinalización-del-mockeado">6. Finalización del mockeado</a>
 <ul class="sectlevel2">
 <li><a href="#trueel-servicio-7">6.1. El servicio</a></li>
 <li><a href="#trueel-controlador-7">6.2. El controlador</a></li>
 </ul>
 </li>
-<li><a href="#truecreaci-n-de-servicios-conectados-a-bases-de-datos">7. Creación de servicios conectados a bases de datos</a>
+<li><a href="#truecreación-de-servicios-conectados-a-bases-de-datos">7. Creación de servicios conectados a bases de datos</a>
 <ul class="sectlevel2">
-<li><a href="#trueconfiguraci-n-de-un-servidor-mysql">7.1. Configuración de un servidor MySQL</a></li>
-<li><a href="#trueorm-y-el-patr-n-de-repositorio">7.2. ORM y el patrón de repositorio</a></li>
-<li><a href="#trueconfiguraci-n-de-la-conexi-n-a-la-base-de-datos">7.3. Configuración de la conexión a la base de datos</a></li>
-<li><a href="#truecreaci-n-de-entidades">7.4. Creación de entidades</a></li>
+<li><a href="#trueconfiguración-de-un-servidor-mysql">7.1. Configuración de un servidor MySQL</a></li>
+<li><a href="#trueorm-y-el-patrón-de-repositorio">7.2. ORM y el patrón de repositorio</a></li>
+<li><a href="#trueconfiguración-de-la-conexión-a-la-base-de-datos">7.3. Configuración de la conexión a la base de datos</a></li>
+<li><a href="#truecreación-de-entidades">7.4. Creación de entidades</a></li>
 <li><a href="#trueel-servicio-8">7.5. El servicio</a></li>
 <li><a href="#trueel-controlador-8">7.6. El controlador</a></li>
-<li><a href="#truem-dulo-para-una-mejor-organizaci-n">7.7. Módulo para una mejor organización</a></li>
-<li><a href="#truemejora-de-la-configuraci-n-del-uso-del-orm">7.8. Mejora de la configuración del uso del ORM</a></li>
+<li><a href="#truemódulo-para-una-mejor-organización">7.7. Módulo para una mejor organización</a></li>
+<li><a href="#truemejora-de-la-configuración-del-uso-del-orm">7.8. Mejora de la configuración del uso del ORM</a></li>
 <li><a href="#truepruebas-de-los-endpoints-con-persistencia-en-la-base-de-datos">7.9. Pruebas de los endpoints con persistencia en la base de datos</a></li>
 <li><a href="#truecambio-a-un-servidor-postgresql">7.10. Cambio a un servidor PostgreSQL</a></li>
 </ul>
 </li>
-<li><a href="#trueautenticaci-n-con-json-web-tokens">8. Autenticación con JSON Web Tokens</a>
+<li><a href="#trueautenticación-con-json-web-tokens">8. Autenticación con JSON Web Tokens</a>
 <ul class="sectlevel2">
-<li><a href="#trueconfiguraci-n-de-la-estrategia-passport">8.1. Configuración de la estrategia Passport</a></li>
-<li><a href="#truem-dulo-de-autenticaci-n">8.2. Módulo de autenticación</a></li>
-<li><a href="#truerestricci-n-del-acceso-de-los-endpoints">8.3. Restricción del acceso de los endpoints</a></li>
+<li><a href="#trueconfiguración-de-la-estrategia-passport">8.1. Configuración de la estrategia Passport</a></li>
+<li><a href="#truemódulo-de-autenticación">8.2. Módulo de autenticación</a></li>
+<li><a href="#truerestricción-del-acceso-de-los-endpoints">8.3. Restricción del acceso de los endpoints</a></li>
 </ul>
 </li>
-<li><a href="#truedocumentaci-n-de-la-api-con-swagger-openapi">9. Documentación de la API con Swagger (OpenAPI)</a>
+<li><a href="#truedocumentación-de-la-api-con-swagger-openapi">9. Documentación de la API con Swagger (OpenAPI)</a>
 <ul class="sectlevel2">
-<li><a href="#truedocumentaci-n-de-dtos-entidades-clases-e-interfaces">9.1. Documentación de DTOs, entidades, clases e interfaces</a></li>
-<li><a href="#truedocumentaci-n-de-los-controladores">9.2. Documentación de los controladores</a></li>
+<li><a href="#truedocumentación-de-dtos-entidades-clases-e-interfaces">9.1. Documentación de DTOs, entidades, clases e interfaces</a></li>
+<li><a href="#truedocumentación-de-los-controladores">9.2. Documentación de los controladores</a></li>
 <li><a href="#truedescarga-de-json">9.3. Descarga de JSON</a></li>
 <li><a href="#truecambio-del-frontend">9.4. Cambio del frontend</a></li>
 </ul>
 </li>
 <li><a href="#truelogging">10. Logging</a>
 <ul class="sectlevel2">
-<li><a href="#trueconfiguraci-n-de-winston">10.1. Configuración de Winston</a></li>
+<li><a href="#trueconfiguración-de-winston">10.1. Configuración de Winston</a></li>
 <li><a href="#trueregistro-de-logs-con-winston">10.2. Registro de logs con Winston</a></li>
 <li><a href="#truelog-de-operaciones-de-la-api">10.3. Log de operaciones de la API</a></li>
 </ul>
 </li>
-<li><a href="#truedocumentaci-n-del-c-digo">11. Documentación del código</a></li>
-<li><a href="#trueap-ndice-a-datos-de-ejemplo">Apéndice A. Datos de ejemplo</a></li>
-<li><a href="#trueap-ndice-b-generaci-n-de-c-digo">Apéndice B. Generación de código</a>
+<li><a href="#truemejora-del-controlador-con-estados-http-estándar">11. Mejora del controlador con estados HTTP estándar</a></li>
+<li><a href="#truedocumentación-del-código">12. Documentación del código</a></li>
+<li><a href="#trueestado-de-salud">13. Estado de salud</a>
+<ul class="sectlevel2">
+<li><a href="#trueconfiguración-inicial-del-estado-de-salud">13.1. Configuración inicial del estado de salud</a></li>
+<li><a href="#trueestado-de-salud-de-componentes">13.2. Estado de salud de componentes</a></li>
+</ul>
+</li>
+<li><a href="#trueapéndice-a-datos-de-ejemplo">Apéndice A. Datos de ejemplo</a></li>
+<li><a href="#trueapéndice-b-generación-de-código">Apéndice B. Generación de código</a>
 <ul class="sectlevel2">
 <li><a href="#truegenerador-de-archivos-para-una-entidad">Generador de archivos para una entidad</a></li>
-<li><a href="#truegenerador-del-c-digo-de-la-entidad">Generador del código de la entidad</a></li>
+<li><a href="#truegenerador-del-código-de-la-entidad">Generador del código de la entidad</a></li>
 </ul>
 </li>
 </ul>
@@ -517,7 +542,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="sectionbody">
 <div class="imageblock">
 <div class="content">
-<img src="./images/logocloudstic.png" alt="logocloudstic.png">
+<img src="./images/logocloudstic.png" alt="logocloudstic">
 </div>
 </div>
 </div>
@@ -564,6 +589,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li>
 <p>Usar Compodoc para la documentación de la aplicación</p>
 </li>
+<li>
+<p>Ofrecer la salud de la API en una ruta concreta</p>
+</li>
 </ul>
 </div>
 <div class="admonitionblock tip">
@@ -583,7 +611,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect1">
-<h2 id="trueintroducci-n"><a class="anchor" href="#trueintroducci-n"></a>1. Introducción</h2>
+<h2 id="trueintroducción"><a class="anchor" href="#trueintroducción"></a>1. Introducción</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>A la hora de desarrollar un proyecto es importante tener una estructura y una estrategia bien planeada para la organización del código. En situaciones donde además los requerimientos son cambiantes es fácil llegar pronto al desastre. Uno de los motivos por los que surge el framework <a href="https://nestjs.com/">NestJS</a> es precisamente el facilitar que los desarrolladores puedan tener una estructura modular de código, lo que facilita el desarrollo de aplicaciones NodeJS empresariales.</p>
@@ -594,14 +622,17 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="paragraph">
 <p>En este tutorial desarrollaremos una API (<a href="https://github.com/ualmtorres/tutorial-nest-js">repositorio</a>) sobre bases de datos (MySQL y PostgreSQL) que implementa endpoints para las operaciones básicas (<code>find, findOne, create, update, delete</code>). Comenzaremos creando un armazón con los controladores y servicios funcionando en modo mock. Una vez probada la conexión correcta entre ellos, se sustituirán los servicios para que interactúen con la base de datos. Además, la API implementará control de acceso a los endpoints mediante <a href="https://jwt.io/">JSON Web Tokens</a>, quedará documentada con Swagger y registrará sus operaciones en archivos de log.</p>
 </div>
+<div class="paragraph">
+<p>En cuanto a la información de uso de la API se ve cómo usar <code>Terminus</code> para exponer el estado de salud de la aplicación y sus componentes.</p>
+</div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="truecreaci-n-del-proyecto"><a class="anchor" href="#truecreaci-n-del-proyecto"></a>2. Creación del proyecto</h2>
+<h2 id="truecreación-del-proyecto"><a class="anchor" href="#truecreación-del-proyecto"></a>2. Creación del proyecto</h2>
 <div class="sectionbody">
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">$ nest new tutorial-nest-js
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ nest new tutorial-nest-js
 $ cd tutorial-nest-js
 $ npm run start:dev</code></pre>
 </div>
@@ -611,7 +642,7 @@ $ npm run start:dev</code></pre>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/HelloWorld.png" alt="HelloWorld.png">
+<img src="./images/HelloWorld.png" alt="HelloWorld">
 </div>
 </div>
 <div class="admonitionblock note">
@@ -626,7 +657,7 @@ $ npm run start:dev</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">  await app.listen(3000); <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">  await app.listen(3000); <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
 </div>
 </div>
 <div class="colist arabic">
@@ -651,7 +682,7 @@ $ npm run start:dev</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { Injectable } from '@nestjs/common';
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { Injectable } from '@nestjs/common';
 
 @Injectable() <i class="conum" data-value="1"></i><b>(1)</b>
 export class AppService {
@@ -681,7 +712,7 @@ export class AppService {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { Controller, Get } from '@nestjs/common';
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service'; <i class="conum" data-value="1"></i><b>(1)</b>
 
 @Controller() <i class="conum" data-value="2"></i><b>(2)</b>
@@ -731,7 +762,7 @@ export class AppController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { NestFactory } from '@nestjs/core';
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -755,7 +786,7 @@ bootstrap();</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">http://localhost:3000/api/v1</code></pre>
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">http://localhost:3000/api/v1</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -763,7 +794,7 @@ bootstrap();</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-json" data-lang="json">{
+<pre class="highlightjs highlight"><code data-lang="json" class="language-json hljs">{
   "statusCode": 404,
   "message": "Cannot GET /",
   "error": "Not Found"
@@ -774,14 +805,14 @@ bootstrap();</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="truecreaci-n-de-nuestro-primer-servicio-y-controlador"><a class="anchor" href="#truecreaci-n-de-nuestro-primer-servicio-y-controlador"></a>3. Creación de nuestro primer servicio y controlador</h2>
+<h2 id="truecreación-de-nuestro-primer-servicio-y-controlador"><a class="anchor" href="#truecreación-de-nuestro-primer-servicio-y-controlador"></a>3. Creación de nuestro primer servicio y controlador</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Desde la línea de comandos usaremos el CLI de NestJS.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">$ nest g service books
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ nest g service books
 $ nest g controller books</code></pre>
 </div>
 </div>
@@ -810,7 +841,7 @@ $ nest g controller books</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { Module } from '@nestjs/common';
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BooksService } from './books/books.service';
@@ -877,7 +908,7 @@ export class AppModule {}</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { Injectable } from '@nestjs/common';
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class BooksService {
@@ -913,7 +944,7 @@ export class BooksService {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { Controller, Get } from '@nestjs/common';
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { Controller, Get } from '@nestjs/common';
 import { BooksService } from './books.service'; <i class="conum" data-value="1"></i><b>(1)</b>
 
 @Controller('books')
@@ -957,19 +988,19 @@ el controlador interceptará la petición, usará el servicio y obtendremos la r
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/PrimerServicio.png" alt="PrimerServicio.png">
+<img src="./images/PrimerServicio.png" alt="PrimerServicio">
 </div>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="truecreaci-n-de-la-primera-versi-n-de-los-endpoints"><a class="anchor" href="#truecreaci-n-de-la-primera-versi-n-de-los-endpoints"></a>4. Creación de la primera versión de los endpoints</h2>
+<h2 id="truecreación-de-la-primera-versión-de-los-endpoints"><a class="anchor" href="#truecreación-de-la-primera-versión-de-los-endpoints"></a>4. Creación de la primera versión de los endpoints</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Comenzaremos haciendo el <em>armazón (scaffolfding)</em> de los endpoints para todas las rutas permitidas pero en una versión muy preliminar. Los servicios se limitarán a mostrar que han sido llamados y a mostrar los parámetros pasados. Una vez que todos funcionen correctamente podremos sustituirlos por servicios que tengan la respuesta real que exige el problema.</p>
 </div>
-<table class="tableblock frame-all grid-all spread">
+<table class="tableblock frame-all grid-all stretch">
 <caption class="title">Table 1. Endpoints</caption>
 <colgroup>
 <col style="width: 33.3333%;">
@@ -1012,7 +1043,7 @@ el controlador interceptará la petición, usará el servicio y obtendremos la r
 </tbody>
 </table>
 <div class="sect2">
-<h3 id="truerecuperaci-n-de-un-libro"><a class="anchor" href="#truerecuperaci-n-de-un-libro"></a>4.1. Recuperación de un libro</h3>
+<h3 id="truerecuperación-de-un-libro"><a class="anchor" href="#truerecuperación-de-un-libro"></a>4.1. Recuperación de un libro</h3>
 <div class="sect3">
 <h4 id="trueel-servicio-2"><a class="anchor" href="#trueel-servicio-2"></a>4.1.1. El servicio</h4>
 <div class="paragraph">
@@ -1023,7 +1054,7 @@ el controlador interceptará la petición, usará el servicio y obtendremos la r
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">...
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">...
   findBook(bookId: string) {
     return `findBook funcionando con bookId: ${bookId}`;
   }
@@ -1041,7 +1072,7 @@ el controlador interceptará la petición, usará el servicio y obtendremos la r
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { Param } from '@nestjs/common';
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { Param } from '@nestjs/common';
 ...
 @Controller('books')
 export class BooksController {
@@ -1081,7 +1112,7 @@ export class BooksController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">  @Get(':RequestedBookId')
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">  @Get(':RequestedBookId')
   findBook(@Param('RequestedBookId') methodBookId: string) {
     return this.booksService.findBook(methodBookId);
   }</code></pre>
@@ -1096,13 +1127,13 @@ export class BooksController {
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/GetBookV0.png" alt="GetBookV0.png">
+<img src="./images/GetBookV0.png" alt="GetBookV0">
 </div>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="truefiltrado-mediante-par-metros-recuperaci-n-de-todos-los-libros-en-orden-descendente"><a class="anchor" href="#truefiltrado-mediante-par-metros-recuperaci-n-de-todos-los-libros-en-orden-descendente"></a>4.2. Filtrado mediante parámetros. Recuperación de todos los libros en orden descendente.</h3>
+<h3 id="truefiltrado-mediante-parámetros-recuperación-de-todos-los-libros-en-orden-descendente"><a class="anchor" href="#truefiltrado-mediante-parámetros-recuperación-de-todos-los-libros-en-orden-descendente"></a>4.2. Filtrado mediante parámetros. Recuperación de todos los libros en orden descendente.</h3>
 <div class="paragraph">
 <p>En la URL se pueden pasar parámetros en forma de una lista de pares clave valor. Por ejemplo: <code><a href="http://localhost:3000/api/v1/books?sort=1" class="bare">http://localhost:3000/api/v1/books?sort=1</a></code>. Los parámetros son recogidos en NestJS con el decorador <code>@Query()</code></p>
 </div>
@@ -1161,7 +1192,7 @@ El servicio tendrá que encargarse de determinar cómo trabajar con los parámet
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">...
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">...
   findAll(params): any {
     return params.length &gt; 0
       ? `findAll funcionando con ${params}`
@@ -1181,7 +1212,7 @@ El servicio tendrá que encargarse de determinar cómo trabajar con los parámet
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { Query } from '@nestjs/common';
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { Query } from '@nestjs/common';
 ...
   @Get()
   findAll(@Query('order') order: string) { <i class="conum" data-value="1"></i><b>(1)</b>
@@ -1218,7 +1249,7 @@ El servicio tendrá que encargarse de determinar cómo trabajar con los parámet
 </div>
 </div>
 <div class="sect3">
-<h4 id="trueuna-soluci-n-m-s-din-mica"><a class="anchor" href="#trueuna-soluci-n-m-s-din-mica"></a>4.2.3. Una solución más dinámica</h4>
+<h4 id="trueuna-solución-más-dinámica"><a class="anchor" href="#trueuna-solución-más-dinámica"></a>4.2.3. Una solución más dinámica</h4>
 <div class="paragraph">
 <p>La solución planteada para el uso de parámetros hace que ante nuevos parámetros en las peticiones se tenga que modificar tanto el controlador (añadiendo nuevos decoradores <code>@Query</code> para los nuevos parámetros) como el servicio, que es el que hace uso de ellos.</p>
 </div>
@@ -1230,7 +1261,7 @@ El servicio tendrá que encargarse de determinar cómo trabajar con los parámet
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">...
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">...
   findAll(params): any {
     let msg = `findAll funcionando. Parámetros:`;
 
@@ -1252,7 +1283,7 @@ El servicio tendrá que encargarse de determinar cómo trabajar con los parámet
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { Req } from '@nestjs/common';
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { Req } from '@nestjs/common';
 import { BooksService } from './books.service';
 import { Request } from 'express';
 ...
@@ -1293,7 +1324,7 @@ export class BooksController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-json" data-lang="json">{ order: '1', limit: '10' }</code></pre>
+<pre class="highlightjs highlight"><code data-lang="json" class="language-json hljs">{ order: '1', limit: '10' }</code></pre>
 </div>
 </div>
 </td>
@@ -1305,13 +1336,13 @@ export class BooksController {
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/ParametrosDinamicos.png" alt="ParametrosDinamicos.png">
+<img src="./images/ParametrosDinamicos.png" alt="ParametrosDinamicos">
 </div>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="truecreaci-n-de-un-libro"><a class="anchor" href="#truecreaci-n-de-un-libro"></a>4.3. Creación de un libro</h3>
+<h3 id="truecreación-de-un-libro"><a class="anchor" href="#truecreación-de-un-libro"></a>4.3. Creación de un libro</h3>
 <div class="paragraph">
 <p>Los objetos a crear se pasarán en el <code>body</code> de la petición en formato JSON. El cuerpo de la respuesta contedrá el objeto creado.</p>
 </div>
@@ -1320,7 +1351,7 @@ export class BooksController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-json" data-lang="json">{
+<pre class="highlightjs highlight"><code data-lang="json" class="language-json hljs">{
     "title": "El enigma de la habitación 622",
     "genre": "Ficción contemporánea",
     "description": "Vuelve el «principito de la literatura negra contemporánea, el niño mimado de la industria literaria» (GQ): el nuevo thriller de Joël Dicker es su novela más personal. ",
@@ -1341,7 +1372,7 @@ export class BooksController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">...
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">...
   createBook(newBook: any) {
     return newBook;
   }
@@ -1359,7 +1390,7 @@ export class BooksController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import {
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import {
   Post,
   Body,
 } from '@nestjs/common';
@@ -1403,13 +1434,13 @@ export class BooksController {
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/PostBook.png" alt="PostBook.png">
+<img src="./images/PostBook.png" alt="PostBook">
 </div>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="trueeliminaci-n-de-un-libro"><a class="anchor" href="#trueeliminaci-n-de-un-libro"></a>4.4. Eliminación de un libro</h3>
+<h3 id="trueeliminación-de-un-libro"><a class="anchor" href="#trueeliminación-de-un-libro"></a>4.4. Eliminación de un libro</h3>
 <div class="paragraph">
 <p>La eliminación es muy similar a la de búsqueda de un elemento por <code>id</code>. Se intercepta el <code>id</code> de la ruta y se llama al servicio.</p>
 </div>
@@ -1423,7 +1454,7 @@ export class BooksController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">...
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">...
   deleteBook(bookId: string) {
     return `deleteBook funcionando con bookId: ${bookId}`;
   }
@@ -1441,7 +1472,7 @@ export class BooksController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">...
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">...
 @Controller('books')
 export class BooksController {
 ...
@@ -1473,13 +1504,13 @@ export class BooksController {
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/DeleteBookV0.png" alt="DeleteBookV0.png">
+<img src="./images/DeleteBookV0.png" alt="DeleteBookV0">
 </div>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="truemodificaci-n-de-un-libro"><a class="anchor" href="#truemodificaci-n-de-un-libro"></a>4.5. Modificación de un libro</h3>
+<h3 id="truemodificación-de-un-libro"><a class="anchor" href="#truemodificación-de-un-libro"></a>4.5. Modificación de un libro</h3>
 <div class="paragraph">
 <p>La modificación se puede ver como una operación que combina búsqueda y paso del <code>body</code> con los datos a actualizar. Se intercepta el <code>id</code> de la ruta el <code>body</code>  de la petición.</p>
 </div>
@@ -1493,7 +1524,7 @@ export class BooksController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">...
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">...
   updateBook(bookId: string, newBook: any) {
     return newBook;
   }
@@ -1511,7 +1542,7 @@ export class BooksController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">...
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">...
 @Controller('books')
 export class BooksController {
 ...
@@ -1544,7 +1575,7 @@ export class BooksController {
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/PutBookV0.png" alt="PutBookV0.png">
+<img src="./images/PutBookV0.png" alt="PutBookV0">
 </div>
 </div>
 </div>
@@ -1577,13 +1608,13 @@ export class BooksController {
 </ul>
 </div>
 <div class="sect2">
-<h3 id="truecreaci-n-de-una-interface-para-libros"><a class="anchor" href="#truecreaci-n-de-una-interface-para-libros"></a>5.1. Creación de una interface para libros</h3>
+<h3 id="truecreación-de-una-interface-para-libros"><a class="anchor" href="#truecreación-de-una-interface-para-libros"></a>5.1. Creación de una interface para libros</h3>
 <div class="paragraph">
 <p>Se define una interface con las propiedades que representan a un libro. En nuestro caso crearíamos un archivo <code>book.class.ts</code></p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">export class Book {
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">export class Book {
   id: number;
   title: string;
   genre: string;
@@ -1611,13 +1642,13 @@ export class BooksController {
 </div>
 </div>
 <div class="sect2">
-<h3 id="truecreaci-n-de-un-dto-para-libros"><a class="anchor" href="#truecreaci-n-de-un-dto-para-libros"></a>5.2. Creación de un DTO para libros</h3>
+<h3 id="truecreación-de-un-dto-para-libros"><a class="anchor" href="#truecreación-de-un-dto-para-libros"></a>5.2. Creación de un DTO para libros</h3>
 <div class="paragraph">
 <p>Se define una clase <code>BookDto</code> que representa a las propiedades de un libro que se especifican y se envían cuando se realiza una petición para crear un libro. Hablamos de los datos que van en la petición y no tienen por que tener una correspondencia directa con un objeto completo del dominio. Incluso pueden contener propiedades de varios objetos del dominio. Como su nombre indica, los DTO (Data Transfer Object) representan a la estructura o al tipo de los datos que se están intercambiando.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">export class BookDto {
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">export class BookDto {
   readonly title: string;
   readonly genre: string;
   readonly description: string;
@@ -1644,13 +1675,13 @@ export class BooksController {
 </div>
 </div>
 <div class="sect2">
-<h3 id="truemodificaci-n-del-controlador-para-el-uso-de-tipos"><a class="anchor" href="#truemodificaci-n-del-controlador-para-el-uso-de-tipos"></a>5.3. Modificación del controlador para el uso de tipos</h3>
+<h3 id="truemodificación-del-controlador-para-el-uso-de-tipos"><a class="anchor" href="#truemodificación-del-controlador-para-el-uso-de-tipos"></a>5.3. Modificación del controlador para el uso de tipos</h3>
 <div class="paragraph">
 <p>Archivo <code>books/book.dto.ts</code></p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-typescript" data-lang="typescript">...
+<pre class="highlightjs highlight"><code data-lang="typescript" class="language-typescript hljs">...
 import { BookDto } from './book.dto'; <i class="conum" data-value="1"></i><b>(1)</b>
 
 @Controller('books')
@@ -1723,7 +1754,7 @@ export class BooksController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">export class CreateBookDto {
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">export class CreateBookDto {
   readonly title: string;
   readonly genre: string;
   readonly description: string;
@@ -1739,7 +1770,7 @@ export class BooksController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">export class UpdateBookDto {
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">export class UpdateBookDto {
   readonly id: number; <i class="conum" data-value="1"></i><b>(1)</b>
   readonly title: string;
   readonly genre: string;
@@ -1763,13 +1794,13 @@ export class BooksController {
 </div>
 </div>
 <div class="sect2">
-<h3 id="truemodificaci-n-del-servicio-para-el-uso-de-tipos"><a class="anchor" href="#truemodificaci-n-del-servicio-para-el-uso-de-tipos"></a>5.4. Modificación del servicio para el uso de tipos</h3>
+<h3 id="truemodificación-del-servicio-para-el-uso-de-tipos"><a class="anchor" href="#truemodificación-del-servicio-para-el-uso-de-tipos"></a>5.4. Modificación del servicio para el uso de tipos</h3>
 <div class="paragraph">
 <p>Archivo <code>books/book.service.ts</code></p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">...
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">...
 import { BookDto } from './book.dto'; <i class="conum" data-value="1"></i><b>(1)</b>
 
 @Injectable()
@@ -1810,7 +1841,7 @@ export class BooksService {
 </div>
 </div>
 <div class="sect1">
-<h2 id="truefinalizaci-n-del-mockeado"><a class="anchor" href="#truefinalizaci-n-del-mockeado"></a>6. Finalización del mockeado</h2>
+<h2 id="truefinalización-del-mockeado"><a class="anchor" href="#truefinalización-del-mockeado"></a>6. Finalización del mockeado</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Hasta ahora, las únicas operaciones que estaban mockeadas con objetos del dominio eran las operaciones de creación y de modificación. Las operaciones de consulta y eliminación se limitabana a devolver un texto indicando que se había alcanzado el endpoint. En este apartado, haremos que todas las operaciones trabajen con datos del dominio aunque todavía será algo preliminar, ya que serán sólo un par de libros almacenados en el propio código y ninguna operación tratará con datos reales (p.e. la búsqueda de un libro siempre devolverá el mismo libro, la actualización/eliminación siempre informará que se ha modificado/eliminado el mismo libro). No obstante, esto permite que el controlador ya trate con los tipos de datos que devolverán los servicios cuando implementen su funcionalidad real.</p>
@@ -1822,7 +1853,7 @@ export class BooksService {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
 import { BookDto } from './book.dto'; <i class="conum" data-value="1"></i><b>(1)</b>
 import { Book } from './book.class'; <i class="conum" data-value="2"></i><b>(2)</b>
 
@@ -1934,7 +1965,7 @@ export class BooksService {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import {
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import {
   Controller,
   Get,
   Param,
@@ -1979,19 +2010,19 @@ export class BooksController {
 </div>
 </div>
 <div class="sect1">
-<h2 id="truecreaci-n-de-servicios-conectados-a-bases-de-datos"><a class="anchor" href="#truecreaci-n-de-servicios-conectados-a-bases-de-datos"></a>7. Creación de servicios conectados a bases de datos</h2>
+<h2 id="truecreación-de-servicios-conectados-a-bases-de-datos"><a class="anchor" href="#truecreación-de-servicios-conectados-a-bases-de-datos"></a>7. Creación de servicios conectados a bases de datos</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Hasta ahora, los servicios que hemos creado en este tutorial se limitan a proporcionar unos datos de prueba generando una salida por la consola. Su cometido se ha estado limitando a comprobar que son alcanzables desde los endpoints definidos en la API, mostrándonos simplemente el eco de su llamada. En este apartado vamos a ver cómo conectar el servicio a bases de datos. Primero lo haremos conectando los servicios a una base de datos MySQL y luego comprobaremos lo fácil que es pasarlo a una base de datos PostgreSQL.</p>
 </div>
 <div class="sect2">
-<h3 id="trueconfiguraci-n-de-un-servidor-mysql"><a class="anchor" href="#trueconfiguraci-n-de-un-servidor-mysql"></a>7.1. Configuración de un servidor MySQL</h3>
+<h3 id="trueconfiguración-de-un-servidor-mysql"><a class="anchor" href="#trueconfiguración-de-un-servidor-mysql"></a>7.1. Configuración de un servidor MySQL</h3>
 <div class="paragraph">
 <p>Para trabajar localmente con persistencia necesitamos una base de datos a la que conectarnos. Para no tener que complicarnos con instalaciones y no acoplar el desarrollo a nuestro equipo utilizaremos una <a href="https://hub.docker.com/_/mysql">imagen Docker de MySQL 5.7</a>. Crearemos una base de datos denominada <code>tutorial</code>. Usaremos las cuenta <code>root</code> con el password <code>secret</code></p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">$ docker run --name tutorial_mysql -e MYSQL_ROOT_PASSWORD=secret -p 3306:3306 -d mysql:5.7 <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ docker run --name tutorial_mysql -e MYSQL_ROOT_PASSWORD=secret -p 3306:3306 -d mysql:5.7 <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
 </div>
 </div>
 <div class="colist arabic">
@@ -2007,7 +2038,7 @@ export class BooksController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">$ docker exec -it tutorial_mysql bash
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ docker exec -it tutorial_mysql bash
 root@d0512407a21d:/# mysql -u root -p
 Enter password: <i class="conum" data-value="1"></i><b>(1)</b>
 ...
@@ -2032,7 +2063,7 @@ Query OK, 1 row affected (0.00 sec)</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="trueorm-y-el-patr-n-de-repositorio"><a class="anchor" href="#trueorm-y-el-patr-n-de-repositorio"></a>7.2. ORM y el patrón de repositorio</h3>
+<h3 id="trueorm-y-el-patrón-de-repositorio"><a class="anchor" href="#trueorm-y-el-patrón-de-repositorio"></a>7.2. ORM y el patrón de repositorio</h3>
 <div class="paragraph">
 <p>Un ORM nos abstrae del acceso a un gestor de bases de datos específico. Esto nos aisla del gestor de base de datos elegido y hace que podamos cambiar de gestor de bases de datos de forma muy sencilla. <a href="https://typeorm.io/#/">TypeORM</a> es un ORM para TypeScript y JavaScript que facilita la interacción con la base de datos. El uso de TypeORM acelera el proceso de desarrollo modelando entidades en el código y sincronizando estos modelos con la base de datos. Actualmente TypeORM ofrece soporte para varias bases de datos relacionales, como PostgreSQL, Oracle, Microsoft SQL Server, SQLite, e incluso para bases de datos NoSQL, como MongoDB.</p>
 </div>
@@ -2047,18 +2078,18 @@ Query OK, 1 row affected (0.00 sec)</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">$ npm install --save @nestjs/typeorm typeorm mysql</code></pre>
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ npm install --save @nestjs/typeorm typeorm mysql</code></pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="trueconfiguraci-n-de-la-conexi-n-a-la-base-de-datos"><a class="anchor" href="#trueconfiguraci-n-de-la-conexi-n-a-la-base-de-datos"></a>7.3. Configuración de la conexión a la base de datos</h3>
+<h3 id="trueconfiguración-de-la-conexión-a-la-base-de-datos"><a class="anchor" href="#trueconfiguración-de-la-conexión-a-la-base-de-datos"></a>7.3. Configuración de la conexión a la base de datos</h3>
 <div class="paragraph">
 <p>Haremos la configuración de la base de datos en el archivo <code>app.module.ts</code> mediante <code>TypeOrmModule.forRoot()</code>. Se le pueden pasar los parámetros de configuración directamente. Sin embargo, existe otra opción que consiste en definir la configuración en un archivo <code>ormconfig.json</code>, que es el que de forma predeterminada busca TypeORM.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { TypeOrmModule } from '@nestjs/typeorm';
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { TypeOrmModule } from '@nestjs/typeorm';
 ...
 @Module({
   imports: [
@@ -2086,7 +2117,7 @@ export class AppModule {}</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-json" data-lang="json">{
+<pre class="highlightjs highlight"><code data-lang="json" class="language-json hljs">{
   "type": "mysql",
   "host": "localhost",
   "port": 3306,
@@ -2118,7 +2149,7 @@ export class AppModule {}</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-code" data-lang="code">...
+<pre class="highlightjs highlight"><code data-lang="code" class="language-code hljs">...
     TypeOrmModule.forRoot(
       {
       type: 'mysql',
@@ -2140,7 +2171,7 @@ export class AppModule {}</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="truecreaci-n-de-entidades"><a class="anchor" href="#truecreaci-n-de-entidades"></a>7.4. Creación de entidades</h3>
+<h3 id="truecreación-de-entidades"><a class="anchor" href="#truecreación-de-entidades"></a>7.4. Creación de entidades</h3>
 <div class="paragraph">
 <p>Las entidades son clases que se corresponden con tablas de la base de datos (colecciones si se trata de MongoDB). En las entidades se definen las columnas y relaciones. Una de esas columnas debe ser la clave primaria.</p>
 </div>
@@ -2180,7 +2211,7 @@ export class AppModule {}</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Book {
@@ -2265,7 +2296,7 @@ export class Book {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
 import { BookDto } from './book.dto'; <i class="conum" data-value="1"></i><b>(1)</b>
 import { Book } from './book.entity'; <i class="conum" data-value="2"></i><b>(2)</b>
 import { InjectRepository } from '@nestjs/typeorm'; <i class="conum" data-value="3"></i><b>(3)</b>
@@ -2367,7 +2398,7 @@ export class BooksService {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import {
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import {
   Controller,
   Get,
   Param,
@@ -2441,7 +2472,7 @@ export class BooksController {
 </div>
 </div>
 <div class="sect2">
-<h3 id="truem-dulo-para-una-mejor-organizaci-n"><a class="anchor" href="#truem-dulo-para-una-mejor-organizaci-n"></a>7.7. Módulo para una mejor organización</h3>
+<h3 id="truemódulo-para-una-mejor-organización"><a class="anchor" href="#truemódulo-para-una-mejor-organización"></a>7.7. Módulo para una mejor organización</h3>
 <div class="paragraph">
 <p>Es buena práctica que en lugar de añadir cada uno de los <em>providers</em> y los <em>controllers</em> a <code>app.module.ts</code>, los agrupemos cada uno en un módulo con los <em>providers</em> y <em>controllers</em>. Posteriormente, ese módulo se importa en el array <code>imports</code> de <code>app.module.ts</code>. Además, las entidades se colocan en el módulo en un array, como argumento de <code>TypeOrmModule.forFeature()</code>.</p>
 </div>
@@ -2450,7 +2481,7 @@ export class BooksController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { Module } from '@nestjs/common';
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { Module } from '@nestjs/common';
 import { Book } from './book.entity';
 import { BooksService } from './books.service';
 import { BooksController } from './books.controller';
@@ -2485,7 +2516,7 @@ export class BooksModule {}</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="truemejora-de-la-configuraci-n-del-uso-del-orm"><a class="anchor" href="#truemejora-de-la-configuraci-n-del-uso-del-orm"></a>7.8. Mejora de la configuración del uso del ORM</h3>
+<h3 id="truemejora-de-la-configuración-del-uso-del-orm"><a class="anchor" href="#truemejora-de-la-configuración-del-uso-del-orm"></a>7.8. Mejora de la configuración del uso del ORM</h3>
 <div class="paragraph">
 <p>Otra mejora que podríamos realizar para la configuración del uso del ORM podría ser el uso de variables de entorno. Esto evita la introducción de valores sensibles en el código, como contraseñas, usuarios de la base de datos, y demás.</p>
 </div>
@@ -2506,13 +2537,13 @@ export class BooksModule {}</code></pre>
 </ol>
 </div>
 <div class="sect3">
-<h4 id="trueinicializaci-n-de-un-archivo-de-variables-de-entorno"><a class="anchor" href="#trueinicializaci-n-de-un-archivo-de-variables-de-entorno"></a>7.8.1. Inicialización de un archivo de variables de entorno</h4>
+<h4 id="trueinicialización-de-un-archivo-de-variables-de-entorno"><a class="anchor" href="#trueinicialización-de-un-archivo-de-variables-de-entorno"></a>7.8.1. Inicialización de un archivo de variables de entorno</h4>
 <div class="paragraph">
 <p>Archivo <code>.env</code></p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-env" data-lang="env">TUTORIAL_HOST=localhost
+<pre class="highlightjs highlight"><code data-lang="env" class="language-env hljs">TUTORIAL_HOST=localhost
 TUTORIAL_PORT=3306
 TUTORIAL_USER=root
 TUTORIAL_PASSWORD=secret
@@ -2521,7 +2552,7 @@ TUTORIAL_DATABASE=tutorial</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="truecreaci-n-de-un-servicio-de-configuraci-n-del-orm"><a class="anchor" href="#truecreaci-n-de-un-servicio-de-configuraci-n-del-orm"></a>7.8.2. Creación de un servicio de configuración del ORM</h4>
+<h4 id="truecreación-de-un-servicio-de-configuración-del-orm"><a class="anchor" href="#truecreación-de-un-servicio-de-configuración-del-orm"></a>7.8.2. Creación de un servicio de configuración del ORM</h4>
 <div class="paragraph">
 <p>Definiremos un servicio de configuración que acceda a las variables de entorno, especifique las variables de entorno que hay que configurar y una función que las configure.<br></p>
 </div>
@@ -2544,7 +2575,7 @@ TUTORIAL_DATABASE=tutorial</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { TypeOrmModuleOptions } from '@nestjs/typeorm'; <i class="conum" data-value="1"></i><b>(1)</b>
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { TypeOrmModuleOptions } from '@nestjs/typeorm'; <i class="conum" data-value="1"></i><b>(1)</b>
 
 require('dotenv').config();
 
@@ -2622,7 +2653,7 @@ export { configService };</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="trueactualizaci-n-de-code-app-module-ts-code-para-cargar-la-configuraci-n-del-orm-y-los-m-dulos"><a class="anchor" href="#trueactualizaci-n-de-code-app-module-ts-code-para-cargar-la-configuraci-n-del-orm-y-los-m-dulos"></a>7.8.3. Actualización de <code>app.module.ts</code> para cargar la configuración del ORM y los módulos</h4>
+<h4 id="trueactualización-de-app-module-ts-para-cargar-la-configuración-del-orm-y-los-módulos"><a class="anchor" href="#trueactualización-de-app-module-ts-para-cargar-la-configuración-del-orm-y-los-módulos"></a>7.8.3. Actualización de <code>app.module.ts</code> para cargar la configuración del ORM y los módulos</h4>
 <div class="paragraph">
 <p>Por último, modificamos el archivo <code>app.module.ts</code> para usar la configuración anterior y cargar el módulo <code>BooksModule</code>, que define su <em>provider</em>, controlador y la entidad contra la que se mapea.</p>
 </div>
@@ -2631,7 +2662,7 @@ export { configService };</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { Module } from '@nestjs/common';
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BooksModule } from './books/books.module';
@@ -2668,7 +2699,7 @@ export class AppModule {}</code></pre>
 <div class="sect2">
 <h3 id="truepruebas-de-los-endpoints-con-persistencia-en-la-base-de-datos"><a class="anchor" href="#truepruebas-de-los-endpoints-con-persistencia-en-la-base-de-datos"></a>7.9. Pruebas de los endpoints con persistencia en la base de datos</h3>
 <div class="paragraph">
-<p>En el <a href="#trueap-ndice-a-datos-de-ejemplo">Apéndice A. Datos de ejemplo</a> podemos encontrar datos para insertar en la base de datos. Se podrían como <code>body</code> en un método <code>POST</code> para su creación o <code>PUT</code> para su modificación.</p>
+<p>En el <a href="#trueapéndice-a-datos-de-ejemplo">Apéndice A. Datos de ejemplo</a> podemos encontrar datos para insertar en la base de datos. Se podrían como <code>body</code> en un método <code>POST</code> para su creación o <code>PUT</code> para su modificación.</p>
 </div>
 <div class="paragraph">
 <p>Usaremos Postman para mostrar los resultados de utilizar los distintos endpoints implementados.</p>
@@ -2678,15 +2709,15 @@ export class AppModule {}</code></pre>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/MySQLPost.png" alt="MySQLPost.png">
+<img src="./images/MySQLPost.png" alt="MySQLPost">
 </div>
 </div>
 <div class="paragraph">
-<p>Tras insertar todos los libros del <a href="#trueap-ndice-a-datos-de-ejemplo">Apéndice A. Datos de ejemplo</a>, la figura siguiente muestra el listado de todos libros. El endpoint usado es <code>/api/v1/books</code> con el método <code>GET</code>.</p>
+<p>Tras insertar todos los libros del <a href="#trueapéndice-a-datos-de-ejemplo">Apéndice A. Datos de ejemplo</a>, la figura siguiente muestra el listado de todos libros. El endpoint usado es <code>/api/v1/books</code> con el método <code>GET</code>.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/MySQLGet.png" alt="MySQLGet.png">
+<img src="./images/MySQLGet.png" alt="MySQLGet">
 </div>
 </div>
 <div class="paragraph">
@@ -2694,7 +2725,7 @@ export class AppModule {}</code></pre>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/MySQLGetOne.png" alt="MySQLGetOne.png">
+<img src="./images/MySQLGetOne.png" alt="MySQLGetOne">
 </div>
 </div>
 <div class="paragraph">
@@ -2702,7 +2733,7 @@ export class AppModule {}</code></pre>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/MySQLPut.png" alt="MySQLPut.png">
+<img src="./images/MySQLPut.png" alt="MySQLPut">
 </div>
 </div>
 <div class="paragraph">
@@ -2710,7 +2741,7 @@ export class AppModule {}</code></pre>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/MySQLDelete.png" alt="MySQLDelete.png">
+<img src="./images/MySQLDelete.png" alt="MySQLDelete">
 </div>
 </div>
 <div class="paragraph">
@@ -2718,7 +2749,7 @@ export class AppModule {}</code></pre>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/MySQLUpdated.png" alt="MySQLUpdated.png">
+<img src="./images/MySQLUpdated.png" alt="MySQLUpdated">
 </div>
 </div>
 </div>
@@ -2741,10 +2772,10 @@ export class AppModule {}</code></pre>
 </ol>
 </div>
 <div class="sect3">
-<h4 id="trueinstalaci-n-de-los-paquetes-de-postgresql"><a class="anchor" href="#trueinstalaci-n-de-los-paquetes-de-postgresql"></a>7.10.1. Instalación de los paquetes de PostgreSQL</h4>
+<h4 id="trueinstalación-de-los-paquetes-de-postgresql"><a class="anchor" href="#trueinstalación-de-los-paquetes-de-postgresql"></a>7.10.1. Instalación de los paquetes de PostgreSQL</h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">npm install --save pg</code></pre>
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">npm install --save pg</code></pre>
 </div>
 </div>
 <div class="sidebarblock">
@@ -2758,7 +2789,7 @@ export class AppModule {}</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-sh" data-lang="sh">#!/bin/bash
+<pre class="highlightjs highlight"><code data-lang="sh" class="language-sh hljs">#!/bin/bash
 set -e
 
 SERVER="tutorial_postgres";
@@ -2786,13 +2817,13 @@ echo "\l" | docker exec -i $SERVER psql -U postgres</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="truemodificaci-n-de-las-variables-de-entorno"><a class="anchor" href="#truemodificaci-n-de-las-variables-de-entorno"></a>7.10.2. Modificación de las variables de entorno</h4>
+<h4 id="truemodificación-de-las-variables-de-entorno"><a class="anchor" href="#truemodificación-de-las-variables-de-entorno"></a>7.10.2. Modificación de las variables de entorno</h4>
 <div class="paragraph">
 <p>Cambios a realizar: en el archivo <code>.env</code>:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">TUTORIAL_HOST=localhost
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">TUTORIAL_HOST=localhost
 TUTORIAL_PORT=5432 <i class="conum" data-value="1"></i><b>(1)</b>
 TUTORIAL_USER=postgres <i class="conum" data-value="2"></i><b>(2)</b>
 TUTORIAL_PASSWORD=secret
@@ -2813,13 +2844,13 @@ TUTORIAL_DATABASE=tutorial</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="truemodificaci-n-del-tipo-de-gestor-de-bases-de-datos"><a class="anchor" href="#truemodificaci-n-del-tipo-de-gestor-de-bases-de-datos"></a>7.10.3. Modificación del tipo de gestor de bases de datos</h4>
+<h4 id="truemodificación-del-tipo-de-gestor-de-bases-de-datos"><a class="anchor" href="#truemodificación-del-tipo-de-gestor-de-bases-de-datos"></a>7.10.3. Modificación del tipo de gestor de bases de datos</h4>
 <div class="paragraph">
 <p>Archivo <code>config/config.service.ts</code></p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">  public getTypeOrmConfig(): TypeOrmModuleOptions {
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">  public getTypeOrmConfig(): TypeOrmModuleOptions {
     return {
       type: 'postgres', <i class="conum" data-value="1"></i><b>(1)</b>
 
@@ -2848,7 +2879,7 @@ TUTORIAL_DATABASE=tutorial</code></pre>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/PostgresEmpty.png" alt="PostgresEmpty.png">
+<img src="./images/PostgresEmpty.png" alt="PostgresEmpty">
 </div>
 </div>
 <div class="paragraph">
@@ -2856,7 +2887,7 @@ TUTORIAL_DATABASE=tutorial</code></pre>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/PostgresWithOne.png" alt="PostgresWithOne.png">
+<img src="./images/PostgresWithOne.png" alt="PostgresWithOne">
 </div>
 </div>
 </div>
@@ -2864,7 +2895,7 @@ TUTORIAL_DATABASE=tutorial</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="trueautenticaci-n-con-json-web-tokens"><a class="anchor" href="#trueautenticaci-n-con-json-web-tokens"></a>8. Autenticación con JSON Web Tokens</h2>
+<h2 id="trueautenticación-con-json-web-tokens"><a class="anchor" href="#trueautenticación-con-json-web-tokens"></a>8. Autenticación con JSON Web Tokens</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Queremos restringir el acceso a los endpoints de la aplicación de forma que sólo tengan acceso los usuarios autenticados. Pero no queremos que se tengan que autenticar para cada petición. Necesitamos una forma que permita a los usuarios indicar que tienen una sesión iniciada válida.</p>
@@ -2929,7 +2960,7 @@ TUTORIAL_DATABASE=tutorial</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">$ npm install @nestjs/jwt passport passport-jwt @nestjs/passport</code></pre>
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ npm install @nestjs/jwt passport passport-jwt @nestjs/passport</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2974,7 +3005,7 @@ TUTORIAL_DATABASE=tutorial</code></pre>
 </ul>
 </div>
 <div class="sect2">
-<h3 id="trueconfiguraci-n-de-la-estrategia-passport"><a class="anchor" href="#trueconfiguraci-n-de-la-estrategia-passport"></a>8.1. Configuración de la estrategia Passport</h3>
+<h3 id="trueconfiguración-de-la-estrategia-passport"><a class="anchor" href="#trueconfiguración-de-la-estrategia-passport"></a>8.1. Configuración de la estrategia Passport</h3>
 <div class="paragraph">
 <p>Configuraremos JWT como estrategia Passport para la autenticación. Definiremos:</p>
 </div>
@@ -2996,7 +3027,7 @@ TUTORIAL_DATABASE=tutorial</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { PassportStrategy } from '@nestjs/passport';
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 
@@ -3040,7 +3071,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) { <i class="conum" d
 </div>
 </div>
 <div class="sect2">
-<h3 id="truem-dulo-de-autenticaci-n"><a class="anchor" href="#truem-dulo-de-autenticaci-n"></a>8.2. Módulo de autenticación</h3>
+<h3 id="truemódulo-de-autenticación"><a class="anchor" href="#truemódulo-de-autenticación"></a>8.2. Módulo de autenticación</h3>
 <div class="paragraph">
 <p>El módulo de autenticación define JWT como la estrategia Passport a usar para los que importen este módulo. Además, define una propiedad (<code>user</code>) para enviar el <em>payload</em> del token en las peticiones.</p>
 </div>
@@ -3049,7 +3080,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) { <i class="conum" d
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { Module } from '@nestjs/common';
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
 @Module({
@@ -3107,7 +3138,7 @@ export class AuthModule {}</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="truerestricci-n-del-acceso-de-los-endpoints"><a class="anchor" href="#truerestricci-n-del-acceso-de-los-endpoints"></a>8.3. Restricción del acceso de los endpoints</h3>
+<h3 id="truerestricción-del-acceso-de-los-endpoints"><a class="anchor" href="#truerestricción-del-acceso-de-los-endpoints"></a>8.3. Restricción del acceso de los endpoints</h3>
 <div class="paragraph">
 <p>Añadimos el módulo <code>AuthModule</code> definido en el paso anterior al módulo de los endpoints que queremos proteger. El módulo <code>AuthModule</code> definía la configuración de la estrategia y el servicio de validación JWT a utilizar.</p>
 </div>
@@ -3116,7 +3147,7 @@ export class AuthModule {}</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">...
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">...
 import { AuthModule } from '../utilities/auth.module';
 
 @Module({
@@ -3162,7 +3193,7 @@ export class BooksModule {}</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import {
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import {
   ...
   UseGuards, <i class="conum" data-value="1"></i><b>(1)</b>
 } from '@nestjs/common';
@@ -3197,7 +3228,7 @@ export class BooksController {
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/JWT-SinAutenticar.png" alt="JWT SinAutenticar.png">
+<img src="./images/JWT-SinAutenticar.png" alt="JWT SinAutenticar">
 </div>
 </div>
 <div class="paragraph">
@@ -3205,14 +3236,14 @@ export class BooksController {
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/JWT-Autenticado.png" alt="JWT Autenticado.png">
+<img src="./images/JWT-Autenticado.png" alt="JWT Autenticado">
 </div>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="truedocumentaci-n-de-la-api-con-swagger-openapi"><a class="anchor" href="#truedocumentaci-n-de-la-api-con-swagger-openapi"></a>9. Documentación de la API con Swagger (OpenAPI)</h2>
+<h2 id="truedocumentación-de-la-api-con-swagger-openapi"><a class="anchor" href="#truedocumentación-de-la-api-con-swagger-openapi"></a>9. Documentación de la API con Swagger (OpenAPI)</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>NestJS cuenta con un módulo que permite la generación automática de la documentación en <a href="https://swagger.io/">Swagger (OpenAPI)</a>. Esto permite obtener la documentación de la API y sus endpoints mediante decoradores en el código.</p>
@@ -3222,7 +3253,7 @@ export class BooksController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code>$ npm install --save @nestjs/swagger swagger-ui-express</code></pre>
+<pre class="highlightjs highlight"><code class="language-none hljs">$ npm install --save @nestjs/swagger swagger-ui-express</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -3230,7 +3261,7 @@ export class BooksController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { NestFactory } from '@nestjs/core';
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'; <i class="conum" data-value="1"></i><b>(1)</b>
 
@@ -3301,7 +3332,7 @@ bootstrap();</code></pre>
 </table>
 </div>
 <div class="sect2">
-<h3 id="truedocumentaci-n-de-dtos-entidades-clases-e-interfaces"><a class="anchor" href="#truedocumentaci-n-de-dtos-entidades-clases-e-interfaces"></a>9.1. Documentación de DTOs, entidades, clases e interfaces</h3>
+<h3 id="truedocumentación-de-dtos-entidades-clases-e-interfaces"><a class="anchor" href="#truedocumentación-de-dtos-entidades-clases-e-interfaces"></a>9.1. Documentación de DTOs, entidades, clases e interfaces</h3>
 <div class="paragraph">
 <p>En clases DTO, así como en entidades, clases e interfaces, incluiremos un decorador <code>@ApiProperty()</code> antes de cada propiedad. A este decorador se le puede pasar un ejemplo que facilite la introducción al uso de la API.</p>
 </div>
@@ -3324,7 +3355,7 @@ bootstrap();</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { ApiProperty } from '@nestjs/swagger'; <i class="conum" data-value="1"></i><b>(1)</b>
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { ApiProperty } from '@nestjs/swagger'; <i class="conum" data-value="1"></i><b>(1)</b>
 
 export class BookDto {
   @ApiProperty({ example: 'Don Quijote de la Mancha' }) <i class="conum" data-value="2"></i><b>(2)</b>
@@ -3372,7 +3403,7 @@ export class BookDto {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Entity()
@@ -3429,7 +3460,7 @@ export class Book {
 </div>
 </div>
 <div class="sect2">
-<h3 id="truedocumentaci-n-de-los-controladores"><a class="anchor" href="#truedocumentaci-n-de-los-controladores"></a>9.2. Documentación de los controladores</h3>
+<h3 id="truedocumentación-de-los-controladores"><a class="anchor" href="#truedocumentación-de-los-controladores"></a>9.2. Documentación de los controladores</h3>
 <div class="paragraph">
 <p>Los métodos de los controladores se pueden agrupar mediante etiquetas Swagger. Para ello se usa el decorador <code>@ApiTags()</code>. Se puede usar el decorador a nivel de clase, lo que combinará a todos los métodos en el mismo grupo. También se puede usar a nivel de método.</p>
 </div>
@@ -3454,7 +3485,7 @@ export class Book {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">...
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">...
 import { BookDto } from './book.dto'; <i class="conum" data-value="1"></i><b>(1)</b>
 import { Book } from './book.entity'; <i class="conum" data-value="2"></i><b>(2)</b>
 import { <i class="conum" data-value="3"></i><b>(3)</b>
@@ -3538,7 +3569,7 @@ export class BooksController {
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/Swagger-Inicio.png" alt="Swagger Inicio.png">
+<img src="./images/Swagger-Inicio.png" alt="Swagger Inicio">
 </div>
 </div>
 <div class="paragraph">
@@ -3546,7 +3577,7 @@ export class BooksController {
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/Swagger-NoAutenticado.png" alt="Swagger NoAutenticado.png">
+<img src="./images/Swagger-NoAutenticado.png" alt="Swagger NoAutenticado">
 </div>
 </div>
 <div class="paragraph">
@@ -3554,7 +3585,7 @@ export class BooksController {
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/Swagger-Token.png" alt="Swagger Token.png">
+<img src="./images/Swagger-Token.png" alt="Swagger Token">
 </div>
 </div>
 <div class="paragraph">
@@ -3562,7 +3593,7 @@ export class BooksController {
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/Swagger-TokenValido.png" alt="Swagger TokenValido.png">
+<img src="./images/Swagger-TokenValido.png" alt="Swagger TokenValido">
 </div>
 </div>
 <div class="paragraph">
@@ -3570,7 +3601,7 @@ export class BooksController {
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/Swagger-Autenticado.png" alt="Swagger Autenticado.png">
+<img src="./images/Swagger-Autenticado.png" alt="Swagger Autenticado">
 </div>
 </div>
 <div class="paragraph">
@@ -3578,7 +3609,7 @@ export class BooksController {
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/Swagger-Respuesta.png" alt="Swagger Respuesta.png">
+<img src="./images/Swagger-Respuesta.png" alt="Swagger Respuesta">
 </div>
 </div>
 <div class="paragraph">
@@ -3595,7 +3626,7 @@ export class BooksController {
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/Swagger-JSON.png" alt="Swagger JSON.png">
+<img src="./images/Swagger-JSON.png" alt="Swagger JSON">
 </div>
 </div>
 <div class="admonitionblock important">
@@ -3626,7 +3657,7 @@ export class BooksController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">$ npm install --save nestjs-redoc@1.3.1</code></pre>
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ npm install --save nestjs-redoc@1.3.1</code></pre>
 </div>
 </div>
 <div class="admonitionblock important">
@@ -3651,7 +3682,7 @@ export class BooksController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-typescript" data-lang="typescript">...
+<pre class="highlightjs highlight"><code data-lang="typescript" class="language-typescript hljs">...
 import { RedocModule, RedocOptions } from 'nestjs-redoc'; <i class="conum" data-value="1"></i><b>(1)</b>
 
 async function bootstrap() {
@@ -3721,7 +3752,7 @@ bootstrap();</code></pre>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/Redoc.png" alt="Redoc.png">
+<img src="./images/Redoc.png" alt="Redoc">
 </div>
 </div>
 <div class="admonitionblock note">
@@ -3844,13 +3875,13 @@ bootstrap();</code></pre>
 </ul>
 </div>
 <div class="sect2">
-<h3 id="trueconfiguraci-n-de-winston"><a class="anchor" href="#trueconfiguraci-n-de-winston"></a>10.1. Configuración de Winston</h3>
+<h3 id="trueconfiguración-de-winston"><a class="anchor" href="#trueconfiguración-de-winston"></a>10.1. Configuración de Winston</h3>
 <div class="paragraph">
 <p>Comenzamos instalando con</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">npm install --save nest-winston winston</code></pre>
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">npm install --save nest-winston winston</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -3861,7 +3892,7 @@ bootstrap();</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">...
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">...
 import { WinstonModule } from 'nest-winston'; <i class="conum" data-value="1"></i><b>(1)</b>
 import * as winston from 'winston';
 import * as path from 'path';
@@ -3960,7 +3991,7 @@ export class AppModule {}</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">import { <i class="conum" data-value="1"></i><b>(1)</b>
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { <i class="conum" data-value="1"></i><b>(1)</b>
     ...
     Inject } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -4009,7 +4040,7 @@ export class SomeController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">    this.logger.log({
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">    this.logger.log({
       level: 'info',
       message: 'Hola',
       service: 'Books',
@@ -4021,7 +4052,7 @@ export class SomeController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-json" data-lang="json">{"level":"info","message":"Hola","service":"Books","timestamp":"2020-08-05 19:14:08"} <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
+<pre class="highlightjs highlight"><code data-lang="json" class="language-json hljs">{"level":"info","message":"Hola","service":"Books","timestamp":"2020-08-05 19:14:08"} <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
 </div>
 </div>
 <div class="colist arabic">
@@ -4118,7 +4149,7 @@ export class SomeController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-json" data-lang="json">  ...
+<pre class="highlightjs highlight"><code data-lang="json" class="language-json hljs">  ...
   @Get()
   ...
   findAll(@Req() request: Request): Promise&lt;Book[]&gt; { <i class="conum" data-value="1"></i><b>(1)</b>
@@ -4164,7 +4195,7 @@ export class SomeController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-json" data-lang="json">...
+<pre class="highlightjs highlight"><code data-lang="json" class="language-json hljs">...
   writeLog(startTime: any, request: any, statusCode: number) {
     let finishTime = Date.now();
     let elapsedTime = finishTime - startTime;
@@ -4187,7 +4218,7 @@ export class SomeController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-json" data-lang="json">{"level":"info","message":"","statusCode":200,"method":"GET","url":"/api/v1/books/1","user":"mtorres","duration":8,"timestamp":"2020-08-06 13:01:49"}</code></pre>
+<pre class="highlightjs highlight"><code data-lang="json" class="language-json hljs">{"level":"info","message":"","statusCode":200,"method":"GET","url":"/api/v1/books/1","user":"mtorres","duration":8,"timestamp":"2020-08-06 13:01:49"}</code></pre>
 </div>
 </div>
 <div class="admonitionblock note">
@@ -4208,14 +4239,302 @@ export class SomeController {
 </div>
 </div>
 <div class="sect1">
-<h2 id="truedocumentaci-n-del-c-digo"><a class="anchor" href="#truedocumentaci-n-del-c-digo"></a>11. Documentación del código</h2>
+<h2 id="truemejora-del-controlador-con-estados-http-estándar"><a class="anchor" href="#truemejora-del-controlador-con-estados-http-estándar"></a>11. Mejora del controlador con estados HTTP estándar</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Hasta ahora hemos devuelto códigos de estado en forma numérica. Es mejor práctica devolverlos codificados (p.e. <code>OK</code>, <code>CREATED</code>, &#8230;&#8203;). <code>HttpStatus</code> es un <code>enum</code> de NestJS que facilita la devolución de códigos de estado (ver <a href="https://github.com/nestjs/nest/blob/master/packages/common/enums/http-status.enum.ts">lista de códigos de estado</a>).</p>
+</div>
+<div class="paragraph">
+<p>A continuación se muestra cómo quedaría en el controlador el código de la petición de recuperación de todos los libros.</p>
+</div>
+<div class="paragraph">
+<p>Archivo <code>src/books/books.controller.ts</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">...
+import { HttpStatus } from '@nestjs/common'; <i class="conum" data-value="1"></i><b>(1)</b>
+...
+  @Get()
+  @ApiOperation({ summary: 'Obtener lista de libros' })
+  @ApiResponse({
+    status: HttpStatus.OK, <i class="conum" data-value="2"></i><b>(2)</b>
+    description: 'Lista de libros',
+    type: [Book],
+  })
+  async findAll(@Req() request: Request, @Res() res): Promise&lt;Book[]&gt; {
+    let startTime = Date.now();
+    let data = await this.booksService.findAll(request.query); <i class="conum" data-value="3"></i><b>(3)</b>
+
+    this.writeLog(startTime, request, HttpStatus.OK); <i class="conum" data-value="4"></i><b>(4)</b>
+    return res.status(HttpStatus.OK) <i class="conum" data-value="5"></i><b>(5)</b>
+    .json({ <i class="conum" data-value="6"></i><b>(6)</b>
+      statusCode: HttpStatus.OK,
+      message: message,
+      data: data,
+    });
+  }
+...</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Enum <code>HttpStatus</code> para los códigos de estado HTTP</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Swagger ahora devuelve el estado codificado</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Almacenar en <code>data</code> para su uso posterior lo que devuelve la llamada al método del servicio</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Entrada de log con el código de estado</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>Devolver código de estado codificado</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="6"></i><b>6</b></td>
+<td>El resultado ahora se devuelve en un JSON formado por tres elementos: <code>statusCode</code>, <code>message</code> y <code>data</code></td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Análogamente, estos cambios también se deben llevar a cabo en el resto de rutas (endpoints) definidas en el controlador. A continuación se muestra el código completo.</p>
+</div>
+<div class="paragraph">
+<p>Archivo <code>src/books/books.controller.ts</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import {
+  Controller,
+  Get,
+  Param,
+  Req,
+  Post,
+  Body,
+  Delete,
+  Put,
+  Inject,
+  UseGuards,
+  Res,
+} from '@nestjs/common';
+import { BooksService } from './books.service';
+import { Request } from 'express';
+import { BookDto } from './book.dto';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
+import { Book } from './book.entity';
+import { AuthGuard } from '@nestjs/passport';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import { HttpStatus } from '@nestjs/common'; <i class="conum" data-value="1"></i><b>(1)</b>
+@ApiTags('book')
+@Controller('books')
+@UseGuards(AuthGuard('jwt'))
+@ApiBearerAuth('access-token')
+export class BooksController {
+  constructor(
+    private booksService: BooksService,
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+  ) {}
+
+
+  @Get() <i class="conum" data-value="2"></i><b>(2)</b>
+  @ApiOperation({ summary: 'Obtener lista de libros' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Lista de libros',
+    type: [Book],
+  })
+  async findAll(@Req() request: Request, @Res() res): Promise&lt;Book[]&gt; {
+    let startTime = Date.now();
+    let data = await this.booksService.findAll(request.query);
+
+    this.writeLog(startTime, request, HttpStatus.OK);
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      message: 'OK',
+      data: data,
+    });
+  }
+
+  @Get(':bookId') <i class="conum" data-value="3"></i><b>(3)</b>
+  @ApiOperation({ summary: 'Devuelve información sobre un libro específico' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Datos del libro',
+    type: Book,
+  })
+  async findBook(
+    @Req() request: Request,
+    @Param('bookId') bookId: string,
+    @Res() res,
+  ): Promise&lt;Book&gt; {
+    let message = 'OK';
+    let startTime = Date.now();
+    let data = await this.booksService.findBook(bookId);
+
+    if (!data) {
+      message = 'A book with the specified id was not found';
+    }
+
+    this.writeLog(startTime, request, HttpStatus.OK);
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      message: message,
+      data: data,
+    });
+  }
+
+  @Post() <i class="conum" data-value="4"></i><b>(4)</b>
+  @ApiOperation({ summary: 'Crear un libro' })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Datos del libro creado',
+    type: Book,
+  })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  async createBook(
+    @Req() request: Request,
+    @Body() newBook: BookDto,
+    @Res() res,
+  ): Promise&lt;Book&gt; {
+    let startTime = Date.now();
+    let data = await this.booksService.createBook(newBook);
+
+    this.writeLog(startTime, request, HttpStatus.CREATED);
+    return res.status(HttpStatus.CREATED).json({
+      statusCode: HttpStatus.CREATED,
+      message: 'OK',
+      data: data,
+    });
+  }
+
+  @Delete(':bookId') <i class="conum" data-value="5"></i><b>(5)</b>
+  @ApiOperation({ summary: 'Eliminar un libro específico' })
+  @ApiResponse({
+    status: 200,
+    description: 'Datos del libro eliminado',
+  })
+  async deleteBook(
+    @Req() request: Request,
+    @Param('bookId') bookId: string,
+    @Res() res,
+  ): Promise&lt;Book&gt; {
+    let message = 'OK';
+    let startTime = Date.now();
+    let data = await this.booksService.deleteBook(bookId);
+
+    if (data['affected'] == 0) {
+      message = 'A book with the specified id was not found';
+      data = {};
+    }
+
+    this.writeLog(startTime, request, HttpStatus.OK);
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      message: message,
+      data: data,
+    });
+  }
+
+  @Put(':bookId') <i class="conum" data-value="6"></i><b>(6)</b>
+  @ApiOperation({ summary: 'Actualizar un libro específico' })
+  @ApiResponse({
+    status: 200,
+    description: 'Datos del libro actualizado',
+    type: Book,
+  })
+  async updateBook(
+    @Req() request: Request,
+    @Param('bookId') bookId: string,
+    @Body() newBook: BookDto,
+    @Res() res,
+  ): Promise&lt;Book&gt; {
+    let message = 'OK';
+    let startTime = Date.now();
+    let data = await this.booksService.updateBook(bookId, newBook);
+
+    if (!data) {
+      message = 'A book with the specified id was not found';
+    }
+
+    this.writeLog(startTime, request, HttpStatus.OK);
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      message: message,
+      data: data,
+    });
+  }
+
+  writeLog(startTime: any, request: any, statusCode: number) {
+    let finishTime = Date.now();
+    let elapsedTime = finishTime - startTime;
+
+    this.logger.log({
+      level: 'info',
+      message: '',
+      statusCode: statusCode,
+      method: request['method'],
+      url: request['url'],
+      user: request['user'].username,
+      duration: elapsedTime,
+    });
+  }
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Enum <code>HttpStatus</code> para los códigos de estado HTTP</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Ruta para devolver todos los libros adaptada para trabajar con códigos de <code>HttpStatus</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Ruta para devolver un libro específico adaptada para trabajar con códigos de <code>HttpStatus</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Ruta para crear un libro adaptada para trabajar con códigos de <code>HttpStatus</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>Ruta para borrar un libro específico adaptada para trabajar con códigos de <code>HttpStatus</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="6"></i><b>6</b></td>
+<td>Ruta para modificar un libro específico adaptada para trabajar con códigos de <code>HttpStatus</code></td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="truedocumentación-del-código"><a class="anchor" href="#truedocumentación-del-código"></a>12. Documentación del código</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>NestJS usa <a href="https://compodoc.app/">Compodoc</a>, una herramienta de documentación para Angular. Al documentar el código, los miembros del equipo de desarrollo podrán entender fácilmente las características de la aplicación o librería. La documentación se anota mediante <a href="https://jsdoc.app/">JSDoc</a> siguiendo este esquema:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-ts" data-lang="ts">/**
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">/**
  * Supported comment
  */</code></pre>
 </div>
@@ -4241,7 +4560,7 @@ export class SomeController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">$ npm i -D @compodoc/compodoc</code></pre>
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ npm i -D @compodoc/compodoc</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -4249,7 +4568,7 @@ export class SomeController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">$ npx compodoc -p tsconfig.json -s --theme material</code></pre>
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ npx compodoc -p tsconfig.json -s --theme material</code></pre>
 </div>
 </div>
 <div class="admonitionblock note">
@@ -4271,7 +4590,7 @@ export class SomeController {
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/Compodoc-Overview.png" alt="Compodoc Overview.png">
+<img src="./images/Compodoc-Overview.png" alt="Compodoc Overview">
 </div>
 </div>
 <div class="paragraph">
@@ -4279,7 +4598,7 @@ export class SomeController {
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/Compodoc-Documentacion.png" alt="Compodoc Documentacion.png">
+<img src="./images/Compodoc-Documentacion.png" alt="Compodoc Documentacion">
 </div>
 </div>
 <div class="paragraph">
@@ -4288,11 +4607,340 @@ export class SomeController {
 </div>
 </div>
 <div class="sect1">
-<h2 id="trueap-ndice-a-datos-de-ejemplo"><a class="anchor" href="#trueap-ndice-a-datos-de-ejemplo"></a>Apéndice A. Datos de ejemplo</h2>
+<h2 id="trueestado-de-salud"><a class="anchor" href="#trueestado-de-salud"></a>13. Estado de salud</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Un aspecto de interés a tener en cuenta al crear una aplicación consiste en ofrecer en una ruta concreta el estado de salud en el que se encuentra la aplicación y sus componentes (p.e. base de datos). Esto facilita el trabajo posterior a la herramientas de monitorización a la hora de recopilación de datos y de disparo de alertas. NestJS se integra con el paquete <a href="https://www.npmjs.com/package/@nestjs/terminus">Terminus</a>. Este paquete nos permite mostrar el estado HTTP de la aplicación en su conjunto, así como indicadores concretos del estado de otros componentes como TypeORM, Mongoose, Sequelize o indicadores de uso de disco y de memoria.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>El estado de salud se suele exponer en la ruta <code>/health</code>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="sect2">
+<h3 id="trueconfiguración-inicial-del-estado-de-salud"><a class="anchor" href="#trueconfiguración-inicial-del-estado-de-salud"></a>13.1. Configuración inicial del estado de salud</h3>
+<div class="paragraph">
+<p>Comenzamos instalando el paquete <code>Terminus</code> con <code>npm</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ npm install --save @nestjs/terminus</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A continuación crearemos un módulo y un controlador <code>health</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ nest generate module health
+$ nest generate controller health</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Tras esto, por un lado tenemos el módulo <code>health</code> en la zona de <code>imports</code> de <code>app.module.ts</code></p>
+</div>
+<div class="listingblock">
+<div class="title">Archivo <code>app.module.ts</code></div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">...
+import { HealthModule } from './health/health.module';
+
+@Module({
+  imports: [
+    ...
+    HealthModule, <i class="conum" data-value="1"></i><b>(1)</b>
+  ],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Módulo <code>HealthModule</code> disponible para la aplicación</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>y por otro lado un módulo <code>HealthModule</code> que incluye al controlador <code>Health</code> creado. A continuación, añadiremos el módulo de <code>Terminus</code> en el módulo <code>HealthModule</code>.</p>
+</div>
+<div class="listingblock">
+<div class="title">Archivo <code>health/health.module.ts</code></div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { Module } from '@nestjs/common';
+import { HealthController } from './health.controller';
+import { TerminusModule } from '@nestjs/terminus';
+
+@Module({
+  imports: [TerminusModule], <i class="conum" data-value="1"></i><b>(1)</b>
+  controllers: [HealthController],
+})
+export class HealthModule {}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Añadimos el módulo de Terminus en el módulo de <em>health</em></td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Por último, para completar la configuración inicial añadiremos una ruta en el controlador <code>health</code> para exponer el estado de salud de la API</p>
+</div>
+<div class="listingblock">
+<div class="title">Archivo <code>health/health.controller.ts</code></div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { Controller, Get } from '@nestjs/common';
+import {
+  HealthCheckService,
+  HealthCheck,
+} from '@nestjs/terminus';
+
+@Controller('health') <i class="conum" data-value="1"></i><b>(1)</b>
+export class HealthController {
+  constructor(
+    private health: HealthCheckService, <i class="conum" data-value="2"></i><b>(2)</b>
+  ) {}
+
+  @Get()
+  @HealthCheck() <i class="conum" data-value="3"></i><b>(3)</b>
+  check() { <i class="conum" data-value="4"></i><b>(4)</b>
+    return this.health.check([]); <i class="conum" data-value="5"></i><b>(5)</b>
+  }
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Ruta en la que se sirve el estado de salud</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Servicio <code>HealthCheckService</code> de <code>Terminus</code> inyectado en el constructor</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Decorador <code>HealthCheck</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Método para devolver el estado de salud</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>Método básico que devuelve si se ha iniciado la API</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Si ahora llamamos a la API en <code>/health</code> obtendremos la respuesta siguiente</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="json" class="language-json hljs">{
+    "status": "ok",
+    "info": {},
+    "error": {},
+    "details": {}
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>API disponible</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>No es demasiada información, pero con esto nada más ya sabemos que la API está disponible, tal y como indica el elemento <code>status</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="trueestado-de-salud-de-componentes"><a class="anchor" href="#trueestado-de-salud-de-componentes"></a>13.2. Estado de salud de componentes</h3>
+<div class="paragraph">
+<p>Terminus ofrece una serie de indicadores de salud interesantes. Entre los más interesantes, actualmente destacan los siguientes:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>HttpHealthIndicator</code></p>
+</li>
+<li>
+<p><code>TypeOrmHealthIndicator</code></p>
+</li>
+<li>
+<p><code>MemoryHealthIndicator</code></p>
+</li>
+<li>
+<p><code>DiskHealthIndicator</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>El uso de estos indicadores va a ofrecer información complementaria y más detallada del estado de la aplicación. Su uso consta de dos pasos a realizar en el controlador <code>health</code>:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Inyectar en el constructor el indicador deseado.</p>
+</li>
+<li>
+<p>Añadir al array <code>health.check</code> una función anónima para cada prueba de salud a realizar en cada componente.</p>
+</li>
+</ol>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>También hay indicadores para conocer el estado de Mongoose y Sequelize. Para ello, se usan los indicadores <code>MongooseHealthIndicator</code> y <code>SequelizeHealthIndicator</code>, respectivamente.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>El código siguiente muestra:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>El uso de comprobación del estado de la base de datos.</p>
+</li>
+<li>
+<p>Si se ha sobrepasado el límite de la memoria (<em>heap</em> y memoria residente) estimada para la aplicación (50 MB y 150 MB, respectivamente).</p>
+</li>
+<li>
+<p>Si se está utilizando más del 75% del disco en la máquina en la que se está ejecutando la aplicación</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { Controller, Get } from '@nestjs/common';
+import { DiskHealthIndicator } from '@nestjs/terminus';
+import {
+  HealthCheckService,
+  HealthCheck,
+  TypeOrmHealthIndicator,
+  MemoryHealthIndicator,
+} from '@nestjs/terminus';
+
+@Controller('health')
+export class HealthController {
+  constructor( <i class="conum" data-value="1"></i><b>(1)</b>
+    private health: HealthCheckService,
+    private dbIndicator: TypeOrmHealthIndicator,
+    private memoryIndicator: MemoryHealthIndicator,
+    private diskHealthIndicator: DiskHealthIndicator,
+  ) {}
+
+  @Get()
+  @HealthCheck()
+  check() {
+    return this.health.check([
+      () =&gt; this.dbIndicator.pingCheck('database'), <i class="conum" data-value="2"></i><b>(2)</b>
+      () =&gt; this.memoryIndicator.checkHeap('heap', 50 * 1024 * 1024), // process &lt; 50MB <i class="conum" data-value="3"></i><b>(3)</b>
+      () =&gt; this.memoryIndicator.checkRSS('memory', 150 * 1024 * 1024), // process &lt; 150MB <i class="conum" data-value="4"></i><b>(4)</b>
+      () =&gt;
+        this.diskHealthIndicator.checkStorage('disk &lt;5&gt; health', {
+          thresholdPercent: 0.75,
+          path: '/',
+        }),
+    ]);
+  }
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Inyección de servicios Terminus de indicación de salud</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Comprueba que la base de datos esté activa y admita conexiones</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Comprueba que el uso del heap está por debajo de 50 MB</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Comprueba que el uso de memoria residente está por debajo de 150 MB</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>Comprueba que el uso del disco en la máquina en la que se ejecuta esta aplicación está por debajo del 75%</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Si todos los indicadores devuelven <code>ok</code>, el <code>status</code> global es <code>ok</code>. Si alguno de los componentes no cumple la condición de check establecida, el <code>status</code> global de la aplicación pasa a ser <code>error</code>. Los componentes que funcionan correctamente se devuelven en el elemento <code>info</code>. En cambio, los componentes que presentan algún problema se devuelven en el elemento <code>error</code>.</p>
+</div>
+<div class="paragraph">
+<p>Si consultamos las ruta <code>/health</code>, devuelve que el estado global es <code>ok</code> y que todos los componentes están <code>ok</code>.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/statusOK.png" alt="statusOK">
+</div>
+</div>
+<div class="paragraph">
+<p>Para forzar un error, si reducimos la memoria RSS a un valor de 10 MB en lugar de los 150 MB anteriores, el estado de salud pasará a <code>error</code> y en el elemento <code>error</code> se creará una entrada para el elemento que presenta anomalías (<code>memory</code> en este caso).</p>
+</div>
+<div class="paragraph">
+<p><span class="image"><img src="./images/statusError.png" alt="statusError"></span></p>
+</div>
+<div class="paragraph">
+<p>Una vez definidas las pruebas de salud que queremos exponer de nuestra API e informamos del estado de cada uno de sus componentes, se facilita bastante el trabajo posterior a los sistemas de monitorización que se estén usando. Estos, periódicamente visitarán la ruta <code>/health</code>, recopilarán los datos para su posterior análisis y dispararán alguna alarma llegado el caso de que se produzca un error en algún componente.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Es posible construir indicadores de salud personalizados (p.e. <a href="https://wanago.io/2021/10/11/api-nestjs-health-checks-terminus-datadog/">chequear el estado de un servicio ElasticSearch asociado a nuestra API</a>)</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="trueapéndice-a-datos-de-ejemplo"><a class="anchor" href="#trueapéndice-a-datos-de-ejemplo"></a>Apéndice A. Datos de ejemplo</h2>
 <div class="sectionbody">
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-json" data-lang="json">[
+<pre class="highlightjs highlight"><code data-lang="json" class="language-json hljs">[
   {
     "title": "Una historia de España",
     "genre": "Historia",
@@ -4327,7 +4975,7 @@ export class SomeController {
 </div>
 </div>
 <div class="sect1">
-<h2 id="trueap-ndice-b-generaci-n-de-c-digo"><a class="anchor" href="#trueap-ndice-b-generaci-n-de-c-digo"></a>Apéndice B. Generación de código</h2>
+<h2 id="trueapéndice-b-generación-de-código"><a class="anchor" href="#trueapéndice-b-generación-de-código"></a>Apéndice B. Generación de código</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>A la hora de abordar un proyecto de backend hay tareas repetitivas que son susceptibles de ser sometidas a algún grado de automatización. Esto es algo deseable ya que de forma directa esto aumentará nuestra eficacia por un lado, y por otro reducirá la introducción de errores. Veamos aquí dos generadores de código útiles.</p>
@@ -4339,7 +4987,7 @@ export class SomeController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">$ nest generate resource &lt;nombre-recurso&gt;</code></pre>
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ nest generate resource &lt;nombre-recurso&gt;</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -4347,7 +4995,7 @@ export class SomeController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">? What transport layer do you use? (Use arrow keys)
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">? What transport layer do you use? (Use arrow keys)
 ❯ REST API
   GraphQL (code first)
   GraphQL (schema first)
@@ -4360,7 +5008,7 @@ export class SomeController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">? Would you like to generate CRUD entry points? (Y/n)</code></pre>
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">? Would you like to generate CRUD entry points? (Y/n)</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -4368,7 +5016,7 @@ export class SomeController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">CREATE src/users/users.controller.spec.ts (566 bytes)
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">CREATE src/users/users.controller.spec.ts (566 bytes)
 CREATE src/users/users.controller.ts (890 bytes)
 CREATE src/users/users.module.ts (247 bytes)
 CREATE src/users/users.service.spec.ts (453 bytes)
@@ -4382,7 +5030,7 @@ UPDATE src/app.module.ts (312 bytes)</code></pre>
 <div class="listingblock">
 <div class="title">Archivo <code>users.controller.ts</code> creado</div>
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-typescript" data-lang="typescript">import { Controller, Get, Post, Body, Put, Param, Delete } from '@nestjs/common';
+<pre class="highlightjs highlight"><code data-lang="typescript" class="language-typescript hljs">import { Controller, Get, Post, Body, Put, Param, Delete } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -4421,7 +5069,7 @@ export class UsersController {
 <div class="listingblock">
 <div class="title">Archivo <code>users.service.ts</code> creado</div>
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-typescript" data-lang="typescript">import { Injectable } from '@nestjs/common';
+<pre class="highlightjs highlight"><code data-lang="typescript" class="language-typescript hljs">import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
@@ -4468,7 +5116,7 @@ export class UsersService {
 </div>
 </div>
 <div class="sect2">
-<h3 id="truegenerador-del-c-digo-de-la-entidad"><a class="anchor" href="#truegenerador-del-c-digo-de-la-entidad"></a>Generador del código de la entidad</h3>
+<h3 id="truegenerador-del-código-de-la-entidad"><a class="anchor" href="#truegenerador-del-código-de-la-entidad"></a>Generador del código de la entidad</h3>
 <div class="paragraph">
 <p><code>typeorm-model-generator</code> es un paquete NodeJS para trabajar con TypeORM que genera los modelos a partir de las tablas existentes en una base de datos. Actualmente soporta los siguientes DBMS:</p>
 </div>
@@ -4558,7 +5206,7 @@ export class UsersService {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">$ npx typeorm-model-generator -h localhost -d myDatabase -u myUser -x myPassword -e oracle -o ./reservations -p 1527</code></pre>
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ npx typeorm-model-generator -h localhost -d myDatabase -u myUser -x myPassword -e oracle -o ./reservations -p 1527</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -4586,7 +5234,7 @@ export class UsersService {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-typescript" data-lang="typescript">import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
+<pre class="highlightjs highlight"><code data-lang="typescript" class="language-typescript hljs">import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
 import { RstCalendarios } from "./RstCalendarios";
 
 @Index("RST_DIAS_PK", ["yDia"], { unique: true })
@@ -4632,11 +5280,11 @@ export class RstDias {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-01-27 00:42:50 CET
+Last updated 2021-11-30 00:24:01 +0100
 </div>
 </div>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/styles/github.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/github.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
 <script>hljs.initHighlighting()</script>
 </body>
 </html>

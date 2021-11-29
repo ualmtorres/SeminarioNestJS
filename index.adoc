@@ -45,6 +45,7 @@ COLOCA A CONTINUACION LOS OBJETIVOS
 * Usar Swagger para la documentación de la API
 * Registrar las operaciones de la aplicación en archivos de log
 * Usar Compodoc para la documentación de la aplicación
+* Ofrecer la salud de la API en una ruta concreta
 
 [TIP]
 ====
@@ -61,6 +62,8 @@ A la hora de desarrollar un proyecto es importante tener una estructura y una es
 NestJS es un framework NodeJS construido sobre NodeJS y TypeScript, y que hace uso de https://expressjs.com/es/[Express]. Además ofrece soporte para las principales bases de datos (MySQL, PostgreSQL, Oracle, SQLite, MongoDB, ...), https://swagger.io/[Swagger (OpenAPI)], autenticación, logging, y una arquitectura inspirada en https://angular.io/[Angular], características que lo hacen un framework bastante interesante.
 
 En este tutorial desarrollaremos una API (https://github.com/ualmtorres/tutorial-nest-js[repositorio]) sobre bases de datos (MySQL y PostgreSQL) que implementa endpoints para las operaciones básicas (`find, findOne, create, update, delete`). Comenzaremos creando un armazón con los controladores y servicios funcionando en modo mock. Una vez probada la conexión correcta entre ellos, se sustituirán los servicios para que interactúen con la base de datos. Además, la API implementará control de acceso a los endpoints mediante https://jwt.io/[JSON Web Tokens], quedará documentada con Swagger y registrará sus operaciones en archivos de log.
+
+En cuanto a la información de uso de la API se ve cómo usar `Terminus` para exponer el estado de salud de la aplicación y sus componentes.
 
 ## Creación del proyecto
 
@@ -2266,6 +2269,240 @@ Tras hacer una petición `GET /api/v1/books/1` obtendríamos esta entrada en el 
 En este ejemplo se ha optado por definir una entrada de log con campos independientes fuera de `message`. Otra opción es incluirlos dentro de `message` y usar interpolación de variables.
 ====
 
+## Mejora del controlador con estados HTTP estándar
+
+Hasta ahora hemos devuelto códigos de estado en forma numérica. Es mejor práctica devolverlos codificados (p.e. `OK`, `CREATED`, ...). `HttpStatus` es un `enum` de NestJS que facilita la devolución de códigos de estado (ver https://github.com/nestjs/nest/blob/master/packages/common/enums/http-status.enum.ts[lista de códigos de estado]).
+
+A continuación se muestra cómo quedaría en el controlador el código de la petición de recuperación de todos los libros.
+
+Archivo `src/books/books.controller.ts`
+[source, ts]
+----
+...
+import { HttpStatus } from '@nestjs/common'; <1>
+...
+  @Get()
+  @ApiOperation({ summary: 'Obtener lista de libros' })
+  @ApiResponse({
+    status: HttpStatus.OK, <2>
+    description: 'Lista de libros',
+    type: [Book],
+  })
+  async findAll(@Req() request: Request, @Res() res): Promise<Book[]> {
+    let startTime = Date.now();
+    let data = await this.booksService.findAll(request.query); <3>
+
+    this.writeLog(startTime, request, HttpStatus.OK); <4>
+    return res.status(HttpStatus.OK) <5>
+    .json({ <6>
+      statusCode: HttpStatus.OK,
+      message: message,
+      data: data,
+    });
+  }
+...
+----
+<1> Enum `HttpStatus` para los códigos de estado HTTP
+<2> Swagger ahora devuelve el estado codificado
+<3> Almacenar en `data` para su uso posterior lo que devuelve la llamada al método del servicio
+<4> Entrada de log con el código de estado
+<5> Devolver código de estado codificado
+<6> El resultado ahora se devuelve en un JSON formado por tres elementos: `statusCode`, `message` y `data`
+
+Análogamente, estos cambios también se deben llevar a cabo en el resto de rutas (endpoints) definidas en el controlador. A continuación se muestra el código completo.
+
+Archivo `src/books/books.controller.ts`
+[source, ts]
+----
+import {
+  Controller,
+  Get,
+  Param,
+  Req,
+  Post,
+  Body,
+  Delete,
+  Put,
+  Inject,
+  UseGuards,
+  Res,
+} from '@nestjs/common';
+import { BooksService } from './books.service';
+import { Request } from 'express';
+import { BookDto } from './book.dto';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
+import { Book } from './book.entity';
+import { AuthGuard } from '@nestjs/passport';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import { HttpStatus } from '@nestjs/common'; <1>
+@ApiTags('book')
+@Controller('books')
+@UseGuards(AuthGuard('jwt'))
+@ApiBearerAuth('access-token')
+export class BooksController {
+  constructor(
+    private booksService: BooksService,
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+  ) {}
+
+
+  @Get() <2>
+  @ApiOperation({ summary: 'Obtener lista de libros' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Lista de libros',
+    type: [Book],
+  })
+  async findAll(@Req() request: Request, @Res() res): Promise<Book[]> {
+    let startTime = Date.now();
+    let data = await this.booksService.findAll(request.query);
+
+    this.writeLog(startTime, request, HttpStatus.OK);
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      message: 'OK',
+      data: data,
+    });
+  }
+
+  @Get(':bookId') <3>
+  @ApiOperation({ summary: 'Devuelve información sobre un libro específico' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Datos del libro',
+    type: Book,
+  })
+  async findBook(
+    @Req() request: Request,
+    @Param('bookId') bookId: string,
+    @Res() res,
+  ): Promise<Book> {
+    let message = 'OK';
+    let startTime = Date.now();
+    let data = await this.booksService.findBook(bookId);
+
+    if (!data) {
+      message = 'A book with the specified id was not found';
+    }
+
+    this.writeLog(startTime, request, HttpStatus.OK);
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      message: message,
+      data: data,
+    });
+  }
+
+  @Post() <4>
+  @ApiOperation({ summary: 'Crear un libro' })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Datos del libro creado',
+    type: Book,
+  })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  async createBook(
+    @Req() request: Request,
+    @Body() newBook: BookDto,
+    @Res() res,
+  ): Promise<Book> {
+    let startTime = Date.now();
+    let data = await this.booksService.createBook(newBook);
+
+    this.writeLog(startTime, request, HttpStatus.CREATED);
+    return res.status(HttpStatus.CREATED).json({
+      statusCode: HttpStatus.CREATED,
+      message: 'OK',
+      data: data,
+    });
+  }
+
+  @Delete(':bookId') <5>
+  @ApiOperation({ summary: 'Eliminar un libro específico' })
+  @ApiResponse({
+    status: 200,
+    description: 'Datos del libro eliminado',
+  })
+  async deleteBook(
+    @Req() request: Request,
+    @Param('bookId') bookId: string,
+    @Res() res,
+  ): Promise<Book> {
+    let message = 'OK';
+    let startTime = Date.now();
+    let data = await this.booksService.deleteBook(bookId);
+
+    if (data['affected'] == 0) {
+      message = 'A book with the specified id was not found';
+      data = {};
+    }
+
+    this.writeLog(startTime, request, HttpStatus.OK);
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      message: message,
+      data: data,
+    });
+  }
+
+  @Put(':bookId') <6>
+  @ApiOperation({ summary: 'Actualizar un libro específico' })
+  @ApiResponse({
+    status: 200,
+    description: 'Datos del libro actualizado',
+    type: Book,
+  })
+  async updateBook(
+    @Req() request: Request,
+    @Param('bookId') bookId: string,
+    @Body() newBook: BookDto,
+    @Res() res,
+  ): Promise<Book> {
+    let message = 'OK';
+    let startTime = Date.now();
+    let data = await this.booksService.updateBook(bookId, newBook);
+
+    if (!data) {
+      message = 'A book with the specified id was not found';
+    }
+
+    this.writeLog(startTime, request, HttpStatus.OK);
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      message: message,
+      data: data,
+    });
+  }
+
+  writeLog(startTime: any, request: any, statusCode: number) {
+    let finishTime = Date.now();
+    let elapsedTime = finishTime - startTime;
+
+    this.logger.log({
+      level: 'info',
+      message: '',
+      statusCode: statusCode,
+      method: request['method'],
+      url: request['url'],
+      user: request['user'].username,
+      duration: elapsedTime,
+    });
+  }
+}
+----
+<1> Enum `HttpStatus` para los códigos de estado HTTP
+<2> Ruta para devolver todos los libros adaptada para trabajar con códigos de `HttpStatus`
+<3> Ruta para devolver un libro específico adaptada para trabajar con códigos de `HttpStatus`
+<4> Ruta para crear un libro adaptada para trabajar con códigos de `HttpStatus`
+<3> Ruta para borrar un libro específico adaptada para trabajar con códigos de `HttpStatus`
+<3> Ruta para modificar un libro específico adaptada para trabajar con códigos de `HttpStatus`
+
 ## Documentación del código
 
 NestJS usa https://compodoc.app/[Compodoc], una herramienta de documentación para Angular. Al documentar el código, los miembros del equipo de desarrollo podrán entender fácilmente las características de la aplicación o librería. La documentación se anota mediante https://jsdoc.app/[JSDoc] siguiendo este esquema:
@@ -2312,6 +2549,198 @@ image::Compodoc-Documentacion.png[]
 
 
 Para más información sobre JSDoc, consultar la https://compodoc.app/[documentación oficial]
+
+## Estado de salud
+
+Un aspecto de interés a tener en cuenta al crear una aplicación consiste en ofrecer en una ruta concreta el estado de salud en el que se encuentra la aplicación y sus componentes (p.e. base de datos). Esto facilita el trabajo posterior a la herramientas de monitorización a la hora de recopilación de datos y de disparo de alertas. NestJS se integra con el paquete https://www.npmjs.com/package/@nestjs/terminus[Terminus]. Este paquete nos permite mostrar el estado HTTP de la aplicación en su conjunto, así como indicadores concretos del estado de otros componentes como TypeORM, Mongoose, Sequelize o indicadores de uso de disco y de memoria.
+
+[NOTE]
+====
+El estado de salud se suele exponer en la ruta `/health`.
+====
+
+### Configuración inicial del estado de salud
+
+Comenzamos instalando el paquete `Terminus` con `npm`
+
+[source, bash]
+----
+$ npm install --save @nestjs/terminus
+----
+
+A continuación crearemos un módulo y un controlador `health`.
+
+[source, bash]
+----
+$ nest generate module health
+$ nest generate controller health
+----
+
+Tras esto, por un lado tenemos el módulo `health` en la zona de `imports` de `app.module.ts` 
+
+.Archivo `app.module.ts`
+[source, ts]
+----
+...
+import { HealthModule } from './health/health.module';
+
+@Module({
+  imports: [
+    ...
+    HealthModule, <1>
+  ],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}
+----
+<1> Módulo `HealthModule` disponible para la aplicación
+
+y por otro lado un módulo `HealthModule` que incluye al controlador `Health` creado. A continuación, añadiremos el módulo de `Terminus` en el módulo `HealthModule`.
+
+.Archivo `health/health.module.ts`
+[source, ts]
+----
+import { Module } from '@nestjs/common';
+import { HealthController } from './health.controller';
+import { TerminusModule } from '@nestjs/terminus';
+
+@Module({
+  imports: [TerminusModule], <1>
+  controllers: [HealthController],
+})
+export class HealthModule {}
+----
+<1> Añadimos el módulo de Terminus en el módulo de _health_
+
+Por último, para completar la configuración inicial añadiremos una ruta en el controlador `health` para exponer el estado de salud de la API
+
+.Archivo `health/health.controller.ts`
+[source, ts]
+----
+import { Controller, Get } from '@nestjs/common';
+import {
+  HealthCheckService,
+  HealthCheck,
+} from '@nestjs/terminus';
+
+@Controller('health') <1>
+export class HealthController {
+  constructor(
+    private health: HealthCheckService, <2>
+  ) {}
+
+  @Get()
+  @HealthCheck() <3>
+  check() { <4>
+    return this.health.check([]); <5>
+  }
+}
+----
+<1> Ruta en la que se sirve el estado de salud
+<2> Servicio `HealthCheckService` de `Terminus` inyectado en el constructor
+<3> Decorador `HealthCheck`
+<4> Método para devolver el estado de salud
+<5> Método básico que devuelve si se ha iniciado la API
+
+Si ahora llamamos a la API en `/health` obtendremos la respuesta siguiente
+
+[source, json]
+----
+{
+    "status": "ok",
+    "info": {},
+    "error": {},
+    "details": {}
+}
+----
+<1> API disponible
+
+No es demasiada información, pero con esto nada más ya sabemos que la API está disponible, tal y como indica el elemento `status`.
+
+### Estado de salud de componentes
+
+Terminus ofrece una serie de indicadores de salud interesantes. Entre los más interesantes, actualmente destacan los siguientes:
+
+* `HttpHealthIndicator`
+* `TypeOrmHealthIndicator`
+* `MemoryHealthIndicator`
+* `DiskHealthIndicator`
+
+El uso de estos indicadores va a ofrecer información complementaria y más detallada del estado de la aplicación. Su uso consta de dos pasos a realizar en el controlador `health`: 
+
+. Inyectar en el constructor el indicador deseado.
+. Añadir al array `health.check` una función anónima para cada prueba de salud a realizar en cada componente.
+
+[NOTE]
+====
+También hay indicadores para conocer el estado de Mongoose y Sequelize. Para ello, se usan los indicadores `MongooseHealthIndicator` y `SequelizeHealthIndicator`, respectivamente.
+====
+
+El código siguiente muestra:
+
+* El uso de comprobación del estado de la base de datos.
+* Si se ha sobrepasado el límite de la memoria (_heap_ y memoria residente) estimada para la aplicación (50 MB y 150 MB, respectivamente).
+* Si se está utilizando más del 75% del disco en la máquina en la que se está ejecutando la aplicación
+
+[source, ts]
+----
+import { Controller, Get } from '@nestjs/common';
+import { DiskHealthIndicator } from '@nestjs/terminus';
+import {
+  HealthCheckService,
+  HealthCheck,
+  TypeOrmHealthIndicator,
+  MemoryHealthIndicator,
+} from '@nestjs/terminus';
+
+@Controller('health')
+export class HealthController {
+  constructor( <1>
+    private health: HealthCheckService,
+    private dbIndicator: TypeOrmHealthIndicator,
+    private memoryIndicator: MemoryHealthIndicator,
+    private diskHealthIndicator: DiskHealthIndicator,
+  ) {}
+
+  @Get()
+  @HealthCheck()
+  check() {
+    return this.health.check([
+      () => this.dbIndicator.pingCheck('database'), <2>
+      () => this.memoryIndicator.checkHeap('heap', 50 * 1024 * 1024), // process < 50MB <3> 
+      () => this.memoryIndicator.checkRSS('memory', 150 * 1024 * 1024), // process < 150MB <4>
+      () =>
+        this.diskHealthIndicator.checkStorage('disk <5> health', {
+          thresholdPercent: 0.75,
+          path: '/',
+        }),
+    ]);
+  }
+}
+----
+<1> Inyección de servicios Terminus de indicación de salud
+<2> Comprueba que la base de datos esté activa y admita conexiones
+<3> Comprueba que el uso del heap está por debajo de 50 MB
+<4> Comprueba que el uso de memoria residente está por debajo de 150 MB
+<5> Comprueba que el uso del disco en la máquina en la que se ejecuta esta aplicación está por debajo del 75%
+
+Si todos los indicadores devuelven `ok`, el `status` global es `ok`. Si alguno de los componentes no cumple la condición de check establecida, el `status` global de la aplicación pasa a ser `error`. Los componentes que funcionan correctamente se devuelven en el elemento `info`. En cambio, los componentes que presentan algún problema se devuelven en el elemento `error`.
+
+Si consultamos las ruta `/health`, devuelve que el estado global es `ok` y que todos los componentes están `ok`.
+
+image::statusOK.png[]
+
+Para forzar un error, si reducimos la memoria RSS a un valor de 10 MB en lugar de los 150 MB anteriores, el estado de salud pasará a `error` y en el elemento `error` se creará una entrada para el elemento que presenta anomalías (`memory` en este caso).
+
+image:statusError.png[]
+
+Una vez definidas las pruebas de salud que queremos exponer de nuestra API e informamos del estado de cada uno de sus componentes, se facilita bastante el trabajo posterior a los sistemas de monitorización que se estén usando. Estos, periódicamente visitarán la ruta `/health`, recopilarán los datos para su posterior análisis y dispararán alguna alarma llegado el caso de que se produzca un error en algún componente.
+
+[NOTE]
+====
+Es posible construir indicadores de salud personalizados (p.e. https://wanago.io/2021/10/11/api-nestjs-health-checks-terminus-datadog/[chequear el estado de un servicio ElasticSearch asociado a nuestra API])
+====
 
 :numbered!: 
 
