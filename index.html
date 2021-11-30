@@ -598,6 +598,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li>
 <p>Ofrecer la salud de la API en una ruta concreta</p>
 </li>
+<li>
+<p>Ofrecer las métricas de uso de los endpoints de la API en una ruta concreta</p>
+</li>
 </ul>
 </div>
 <div class="admonitionblock tip">
@@ -4944,18 +4947,41 @@ export class HealthController {
 <div class="sect1">
 <h2 id="trueactivación-de-métricas"><a class="anchor" href="#trueactivación-de-métricas"></a>14. Activación de métricas</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>Las métricas ofrecen una forma de indicar diferentes medidas sobre el funcionamiento de una aplicación (p.e. memoria consumida, peticiones atendidas, cantidad de datos transferidos, &#8230;&#8203;). Estas medidas se recogen con una base temporal dando lugar a series temporales. <a href="https://prometheus.io/">Prometheus</a> es un sistema de monitorización y alertas que ampliamente extendido y que aquí usaremos para recoger y exponer las métricas de nuestra API.</p>
+</div>
+<div class="paragraph">
+<p>El modo de funcionamiento suele ser el siguiente.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>La aplicación expone sus métricas en una ruta (normalmente <code>/metrics</code>).</p>
+</li>
+<li>
+<p>Añadir la aplicación como <em>target</em> de un sistema Prometheus.</p>
+</li>
+<li>
+<p>Prometheus recoge periódicamente las métricas y las almacena como una serie temporal.</p>
+</li>
+</ol>
+</div>
 <div class="sect2">
 <h3 id="truemétricas-de-forma-manual"><a class="anchor" href="#truemétricas-de-forma-manual"></a>14.1. Métricas de forma manual</h3>
 <div class="paragraph">
-<p>Para instalarlo, ejecutaremos desde la terminal</p>
+<p><a href="https://github.com/siimon/prom-client"><code>prom-client</code></a> es un cliente Prometheus para NodeJS que expone las métricas de Prometheus.
+Para instalarlo, ejecutaremos desde la terminal</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ npm install @willsoto/nestjs-prometheus prom-client</code></pre>
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ npm install @willsoto/nestjs-prometheus prom-client --save</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Tras instalarlo, realizamos la configuración del cliente de Prometheus en <code>src/app.module.ts</code></p>
+<p>El ejemplo que desarrollaremos aquí será añadir una métrica denominada <code>books_served</code>. Se trata de un contador que se incrementará en uno cada vez que se llame al servicio de recuperación de todos los libros. Por tanto, cada vez que se haga una petición satisfactoria al endpoint <code>GET /books</code>, se llamará al método <code>findAll</code> del servicio <code>BooksService</code>. Dicho método será el que incremente en uno el contador <code>books_served</code> cada vez que sea ejecutado.</p>
+</div>
+<div class="paragraph">
+<p>Tras instalar <code>prom-client</code>, realizamos la configuración del cliente de Prometheus en el módulo en el que está el servicio que actualizará la métrica. En el caso del ejemplo el módulo es <code>src/books/books.module.ts</code>. En él definiremos las métricas en las que estemos interesados (p.e. <code>books_served</code>).</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -4979,7 +5005,7 @@ import {
     }),
   ],
 })
-export class AppModule {}</code></pre>
+export class BooksModule {}</code></pre>
 </div>
 </div>
 <div class="colist arabic">
@@ -4999,7 +5025,17 @@ export class AppModule {}</code></pre>
 </table>
 </div>
 <div class="paragraph">
-<p>Por último, en el método que actualizará la métrica en Prometheus, se incrementará en uno el contador de la métrica tras cada llamada al método.</p>
+<p>Por último, en el servicio hay que realizar dos acciones:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Inyectar la métrica en el constructor.</p>
+</li>
+<li>
+<p>Incluir en el método que actualizará la métrica en Prometheus (<code>findAll</code>) la acción sobre el contador de la métrica tras cada llamada al método.</p>
+</li>
+</ol>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -5009,7 +5045,7 @@ import { Counter } from 'prom-client'; <i class="conum" data-value="2"></i><b>(2
 
 @Injectable()
 export class BooksService {
-  constructor(@InjectMetric('books_served') public counter: &lt;3&gt; Counter&lt;string&gt;) {}
+  constructor(@InjectMetric('books_served') public counter:  Counter&lt;string&gt;) {} <i class="conum" data-value="3"></i><b>(3)</b>
   findAll(): any {
     this.counter.inc(); <i class="conum" data-value="4"></i><b>(4)</b>
     return {
@@ -5031,7 +5067,7 @@ export class BooksService {
 <table>
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>Imnportación del inyector de métricas</td>
+<td>Importación del inyector de métricas</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="2"></i><b>2</b></td>
@@ -5047,14 +5083,67 @@ export class BooksService {
 </tr>
 </table>
 </div>
+<div class="paragraph">
+<p>Tras llamar al endpoint <code>GET /books</code>, en <code>/metrics</code> ya estará disponible la métrica <code>books_served</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs"># HELP books_served books_help
+# TYPE books_served counter
+books_served 1 <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Métrica disponible tras la llamada al endpoint</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Si volvemos a llamar al endpoint <code>GET /books</code> el resultado en <code>/metrics</code> estará actualizado</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs"># HELP books_served books_help
+# TYPE books_served counter
+books_served 2 <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Métrica actualizada tras la segunda llamada al endpoint</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Tras esto, un sistema Prometheus podría añadir esta API como <em>target</em> y almacenar las métricas como series temporales.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Como cada métrica a usar se inyecta en el constructor del servicio, si hay servicios con varios métodos y cada uno tiene su propia métrica, habrá que inyectar todos las métricas en el constructor. En este caso, un enfoque de un servicio por endpoint y verbo genera un código más limpio ya que el constructor del servicio sólo tendría las métricas del método que implementa ese servicio.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
 </div>
 <div class="sect2">
 <h3 id="truemétricas-con-swagger-stats"><a class="anchor" href="#truemétricas-con-swagger-stats"></a>14.2. Métricas con <code>swagger-stats</code></h3>
 <div class="paragraph">
-<p><code>swagger-stats</code> es un middleware para telemetría de APIs. Permite recoger métricas de los endpoints de la API en cuanto a tiempos de resolución, payloads, códigos de estado HTTP de las respuestas, y demás. En su funcionamiento, detecta las operaciones a través de las rutas de la API.</p>
+<p><code>swagger-stats</code> es un middleware para telemetría de APIs. Permite recoger métricas de los endpoints de la API en cuanto a tiempos de resolución, payloads, códigos de estado HTTP, y demás. En su funcionamiento, detecta las operaciones a través de las rutas de la API.</p>
 </div>
 <div class="paragraph">
-<p>Entre las caracterísitcas de <code>swagger-stats</code>, destacamos que:</p>
+<p>Entre las caracterísitcas de <code>swagger-stats</code> cabe destacar que:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -5062,7 +5151,7 @@ export class BooksService {
 <p>Expone las métricas en formato Prometheus por lo que se puede usar la combinación Prometheus-Grafana para monitorización y alertas. Disponer de estas métricas permitirá identificar errores, peticiones con tiempos elevados de ejecución, identificar los últimos erorres, identificar tendencias y demás operaciones de interés en la monitorización de una API.</p>
 </li>
 <li>
-<p>Incorpora una interfaz de telemetría bastante avanzada de forma que permite comenzar a monitorizar una API si necesidad de instalar nada más de primeras.</p>
+<p>Incorpora una interfaz de telemetría bastante avanzada de forma que permite comenzar a monitorizar una API sin necesidad de instalar nada más de primeras.</p>
 </li>
 <li>
 <p>Permite especificar un host Elasticsearch para el almacenamiento de los datos.</p>
@@ -5074,8 +5163,7 @@ export class BooksService {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ nom install prom-client --save
-$ npm install swagger-stats --save</code></pre>
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ nom install prom-client swagger-stats --save</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -5113,10 +5201,10 @@ bootstrap();
 <div class="content">
 <div class="title">Configuración de <code>swagger-stats</code></div>
 <div class="paragraph">
-<p>Es posible configurar ciertos parámetros interesantes, como el nombre de la API, si se requiere autenticación y credenciales en tal caso, URL y credenciales de Elasticsearch, por citar una cuantas. Para más información, consultar la <a href="https://swaggerstats.io/guide/conf.html#options">documentación oficial</a>.</p>
+<p>Es posible configurar ciertos parámetros interesantes, como el nombre de la API, si se requiere autenticación y sus credenciales, URL de Elasticsearch y sus credenciales, por citar una cuantas. Para más información, consultar la <a href="https://swaggerstats.io/guide/conf.html#options">documentación oficial</a>.</p>
 </div>
 <div class="paragraph">
-<p>A continuación se muestra un ejemplo de configuración en el archivo <code>src/main.ts</code> con parámetros de interés para autenticación y uso de Elastisearch.</p>
+<p>A continuación se muestra un ejemplo de configuración en el archivo <code>src/main.ts</code> con parámetros de interés para uso de <code>swagger-stats</code> bajo autenticación y uso de Elastisearch.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -5145,7 +5233,7 @@ bootstrap();
 </tr>
 <tr>
 <td><i class="conum" data-value="2"></i><b>2</b></td>
-<td>Función callback para realizar la autenticación. Se especifica usuario y contraseña</td>
+<td>Función callback para realizar la autenticación. Se usa para especificar usuario y contraseña de acceso a `swagger-stats</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="3"></i><b>3</b></td>
@@ -5169,7 +5257,7 @@ bootstrap();
 </td>
 <td class="content">
 <div class="paragraph">
-<p>En un entorno de producción, no dejar las credenciales directamente en el código. Se recomienda usar variables de entorno o cualquier otra técnica que no exponga directamente las credenciales.</p>
+<p>En un entorno de producción, no conviene dejar las credenciales directamente en el código. Se recomienda usar variables de entorno o cualquier otra técnica que no exponga directamente las credenciales.</p>
 </div>
 </td>
 </tr>
@@ -5178,42 +5266,91 @@ bootstrap();
 </div>
 </div>
 <div class="paragraph">
-<p>A continuación se muestra cómo luce <code>swagger-stats</code> tras varias interacciones con la API.</p>
+<p>A continuación se muestra cómo luce <code>swagger-stats</code> tras varias interacciones con la API. La pantalla <code>Summary</code> muestra un resumen del tráfico, contadores de errores y peticiones, carga de CPU y RAM.</p>
 </div>
 <div class="imageblock">
 <div class="content">
 <img src="./images/swagger-stats-summary.png" alt="swagger stats summary">
 </div>
 </div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>En la barra de menús superior aparecen controles para establecer el periodo de refresco (desde 1 segundo hasta 1 minuto). Además, es posible tener actualización automática o manual.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>La pantalla <code>Request</code> muestra un informe con las peticiones, respuestas y sus tiempos asociados clasificadas por verbos HTTP.</p>
+</div>
 <div class="imageblock">
 <div class="content">
 <img src="./images/swagger-stats-requests.png" alt="swagger stats requests">
 </div>
+</div>
+<div class="paragraph">
+<p>La pantalla <code>API</code> muestra un resumen de los datos de cada endpoint de la API junto a su verbo HTTP asociado.</p>
 </div>
 <div class="imageblock">
 <div class="content">
 <img src="./images/swagger-stats-api.png" alt="swagger stats api">
 </div>
 </div>
+<div class="paragraph">
+<p>La pantalla <code>Rates &amp; Durations</code> informa de las tasas de transferencia y tiempos de ejecución.</p>
+</div>
 <div class="imageblock">
 <div class="content">
 <img src="./images/swagger-stats-rates-and-durations.png" alt="swagger stats rates and durations">
 </div>
+</div>
+<div class="paragraph">
+<p>La pantalla <code>Payload</code> muestra el tamaño de las peticiones y de las respuestas.</p>
 </div>
 <div class="imageblock">
 <div class="content">
 <img src="./images/swagger-stats-payload.png" alt="swagger stats payload">
 </div>
 </div>
+<div class="paragraph">
+<p>La pantalla <code>Last Errors</code> informa de los últimos errores mostrando la fecha y el endpoint. Al hacer clic sobre la flecha de la izquierda del error se despliega una descripción del error y su contexto. En la figura se muestra que el error se debió a un error al realizar la petición. En concreto, se forzó el error haciendo una petición <code>POST</code> de un libro con un JSON mal formado en el <em>body</em>.</p>
+</div>
 <div class="imageblock">
 <div class="content">
 <img src="./images/swagger-stats-last-errors.png" alt="swagger stats last errors">
 </div>
 </div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>La información extendida de una petición también indica la IP de origen.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>La pantalla <code>Longest Requests</code> informa de las peticiones que han tardado más tiempo en resolverse, mostrando la fecha y el endpoint. Al hacer clic sobre la flecha de la izquierda de la petición se despliega una descripción de la petición, la respuesta y su contexto.</p>
+</div>
 <div class="imageblock">
 <div class="content">
 <img src="./images/swagger-stats-longest-requests.png" alt="swagger stats longest requests">
 </div>
+</div>
+<div class="paragraph">
+<p>Tras esto, un sistema Prometheus podría añadir esta API como <em>target</em> y almacenar las métricas como series temporales.</p>
 </div>
 </div>
 </div>
@@ -5563,7 +5700,7 @@ export class RstDias {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-11-30 21:17:19 +0100
+Last updated 2021-11-30 23:24:23 +0100
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/github.min.css">
