@@ -2742,6 +2742,169 @@ Una vez definidas las pruebas de salud que queremos exponer de nuestra API e inf
 Es posible construir indicadores de salud personalizados (p.e. https://wanago.io/2021/10/11/api-nestjs-health-checks-terminus-datadog/[chequear el estado de un servicio ElasticSearch asociado a nuestra API])
 ====
 
+## Activación de métricas
+
+### Métricas de forma manual
+
+Para instalarlo, ejecutaremos desde la terminal
+
+[source, bash]
+----
+$ npm install @willsoto/nestjs-prometheus prom-client
+----
+
+Tras instalarlo, realizamos la configuración del cliente de Prometheus en `src/app.module.ts`
+
+[source, ts]
+----
+...
+import {
+  makeCounterProvider,
+  PrometheusModule,
+} from '@willsoto/nestjs-prometheus'; <1>
+
+@Module({
+  imports: [
+    ...
+    PrometheusModule.register(), <2> 
+  ],
+  ...
+  providers: [
+    ...
+    makeCounterProvider({<3>
+      name: 'books_served',
+      help: 'books_help',
+    }),
+  ],
+})
+export class AppModule {}
+----
+<1> Importación del paquete de Prometheus para NestJS
+<2> Registro del módulo de Prometheus en el array `imports`
+<3> Creación de un nuevo contador denominado `books_served` y con el texto de ayuda `books_help`
+
+Por último, en el método que actualizará la métrica en Prometheus, se incrementará en uno el contador de la métrica tras cada llamada al método.
+
+[source, ts]
+----
+import { HttpStatus, Injectable } from '@nestjs/common';
+import { InjectMetric } from '@willsoto/nestjs-prometheus'; <1>
+import { Counter } from 'prom-client'; <2>
+
+@Injectable()
+export class BooksService {
+  constructor(@InjectMetric('books_served') public counter: <3> Counter<string>) {}
+  findAll(): any {
+    this.counter.inc(); <4>
+    return {
+      status: HttpStatus.OK,
+      message: 'findAll funcionando',
+    };
+  }
+
+  findOne(bookId: string): any {
+    return {
+      status: HttpStatus.OK,
+      message: `findOne funcionando con ${bookId}`,
+    };
+  }
+}
+----
+<1> Imnportación del inyector de métricas
+<2> Importación del objeto contador
+<3> Inyectar la métrica `books_served`
+<4> Incrementar el contador en cada ejecución del método
+
+### Métricas con `swagger-stats`
+
+`swagger-stats` es un middleware para telemetría de APIs. Permite recoger métricas de los endpoints de la API en cuanto a tiempos de resolución, payloads, códigos de estado HTTP de las respuestas, y demás. En su funcionamiento, detecta las operaciones a través de las rutas de la API. 
+
+Entre las caracterísitcas de `swagger-stats`, destacamos que:
+
+* Expone las métricas en formato Prometheus por lo que se puede usar la combinación Prometheus-Grafana para monitorización y alertas. Disponer de estas métricas permitirá identificar errores, peticiones con tiempos elevados de ejecución, identificar los últimos erorres, identificar tendencias y demás operaciones de interés en la monitorización de una API.
+* Incorpora una interfaz de telemetría bastante avanzada de forma que permite comenzar a monitorizar una API si necesidad de instalar nada más de primeras.
+* Permite especificar un host Elasticsearch para el almacenamiento de los datos.
+
+Para instalarlo, ejecutaremos desde la terminal
+
+[source, bash]
+----
+$ nom install prom-client --save
+$ npm install swagger-stats --save
+----
+
+Tras instalarlo, basta con habilitarlo en `src/main.ts`
+
+[source, ts]
+----
+...
+import * as swStats from 'swagger-stats'; <1>
+...
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  ...
+  app.use(swStats.getMiddleware({})); <2>
+  ...
+}
+bootstrap();
+...
+----
+<1> Importar `swagger-stats`
+<2> Habilitar el middleware `swagger-stats` en la API
+
+.Configuración de `swagger-stats`
+****
+Es posible configurar ciertos parámetros interesantes, como el nombre de la API, si se requiere autenticación y credenciales en tal caso, URL y credenciales de Elasticsearch, por citar una cuantas. Para más información, consultar la https://swaggerstats.io/guide/conf.html#options[documentación oficial].
+
+A continuación se muestra un ejemplo de configuración en el archivo `src/main.ts` con parámetros de interés para autenticación y uso de Elastisearch.
+
+[source, ts]
+----
+...
+  app.use(
+    swStats.getMiddleware({
+      name: 'api-catalog',
+      authentication: true, <1>
+      onAuthenticate: function(req, username, password) { <2>
+        // simple check for username and password
+        return username === 'admin' && password === 'secret';
+      },
+      elasticsearch: 'http://myelastic.com:9200', <3>
+      elasticsearchUsername: 'admin', <4>
+      elasticsearchPassword: 'secret' <5>
+    }),
+  );
+...
+----
+<1> Activación de la autenticación
+<2> Función callback para realizar la autenticación. Se especifica usuario y contraseña
+<3> URL de Elasticsearch
+<4> Nombre de usuario de Elasticsearch
+<5> Password de Elasticsearch
+
+[TIP]
+====
+En un entorno de producción, no dejar las credenciales directamente en el código. Se recomienda usar variables de entorno o cualquier otra técnica que no exponga directamente las credenciales.
+====
+****
+
+A continuación se muestra cómo luce `swagger-stats` tras varias interacciones con la API.
+
+image::swagger-stats-summary.png[]
+
+image::swagger-stats-requests.png[]
+
+image::swagger-stats-api.png[]
+
+image::swagger-stats-rates-and-durations.png[]
+
+image::swagger-stats-payload.png[]
+
+image::swagger-stats-last-errors.png[]
+
+image::swagger-stats-longest-requests.png[]
+
 :numbered!: 
 
 ## Apéndice A. Datos de ejemplo

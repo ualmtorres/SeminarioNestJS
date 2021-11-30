@@ -527,6 +527,12 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#trueestado-de-salud-de-componentes">13.2. Estado de salud de componentes</a></li>
 </ul>
 </li>
+<li><a href="#trueactivación-de-métricas">14. Activación de métricas</a>
+<ul class="sectlevel2">
+<li><a href="#truemétricas-de-forma-manual">14.1. Métricas de forma manual</a></li>
+<li><a href="#truemétricas-con-swagger-stats">14.2. Métricas con <code>swagger-stats</code></a></li>
+</ul>
+</li>
 <li><a href="#trueapéndice-a-datos-de-ejemplo">Apéndice A. Datos de ejemplo</a></li>
 <li><a href="#trueapéndice-b-generación-de-código">Apéndice B. Generación de código</a>
 <ul class="sectlevel2">
@@ -4936,6 +4942,283 @@ export class HealthController {
 </div>
 </div>
 <div class="sect1">
+<h2 id="trueactivación-de-métricas"><a class="anchor" href="#trueactivación-de-métricas"></a>14. Activación de métricas</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="truemétricas-de-forma-manual"><a class="anchor" href="#truemétricas-de-forma-manual"></a>14.1. Métricas de forma manual</h3>
+<div class="paragraph">
+<p>Para instalarlo, ejecutaremos desde la terminal</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ npm install @willsoto/nestjs-prometheus prom-client</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Tras instalarlo, realizamos la configuración del cliente de Prometheus en <code>src/app.module.ts</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">...
+import {
+  makeCounterProvider,
+  PrometheusModule,
+} from '@willsoto/nestjs-prometheus'; <i class="conum" data-value="1"></i><b>(1)</b>
+
+@Module({
+  imports: [
+    ...
+    PrometheusModule.register(), <i class="conum" data-value="2"></i><b>(2)</b>
+  ],
+  ...
+  providers: [
+    ...
+    makeCounterProvider({<i class="conum" data-value="3"></i><b>(3)</b>
+      name: 'books_served',
+      help: 'books_help',
+    }),
+  ],
+})
+export class AppModule {}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Importación del paquete de Prometheus para NestJS</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Registro del módulo de Prometheus en el array <code>imports</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Creación de un nuevo contador denominado <code>books_served</code> y con el texto de ayuda <code>books_help</code></td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Por último, en el método que actualizará la métrica en Prometheus, se incrementará en uno el contador de la métrica tras cada llamada al método.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { HttpStatus, Injectable } from '@nestjs/common';
+import { InjectMetric } from '@willsoto/nestjs-prometheus'; <i class="conum" data-value="1"></i><b>(1)</b>
+import { Counter } from 'prom-client'; <i class="conum" data-value="2"></i><b>(2)</b>
+
+@Injectable()
+export class BooksService {
+  constructor(@InjectMetric('books_served') public counter: &lt;3&gt; Counter&lt;string&gt;) {}
+  findAll(): any {
+    this.counter.inc(); <i class="conum" data-value="4"></i><b>(4)</b>
+    return {
+      status: HttpStatus.OK,
+      message: 'findAll funcionando',
+    };
+  }
+
+  findOne(bookId: string): any {
+    return {
+      status: HttpStatus.OK,
+      message: `findOne funcionando con ${bookId}`,
+    };
+  }
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Imnportación del inyector de métricas</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Importación del objeto contador</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Inyectar la métrica <code>books_served</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Incrementar el contador en cada ejecución del método</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="truemétricas-con-swagger-stats"><a class="anchor" href="#truemétricas-con-swagger-stats"></a>14.2. Métricas con <code>swagger-stats</code></h3>
+<div class="paragraph">
+<p><code>swagger-stats</code> es un middleware para telemetría de APIs. Permite recoger métricas de los endpoints de la API en cuanto a tiempos de resolución, payloads, códigos de estado HTTP de las respuestas, y demás. En su funcionamiento, detecta las operaciones a través de las rutas de la API.</p>
+</div>
+<div class="paragraph">
+<p>Entre las caracterísitcas de <code>swagger-stats</code>, destacamos que:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Expone las métricas en formato Prometheus por lo que se puede usar la combinación Prometheus-Grafana para monitorización y alertas. Disponer de estas métricas permitirá identificar errores, peticiones con tiempos elevados de ejecución, identificar los últimos erorres, identificar tendencias y demás operaciones de interés en la monitorización de una API.</p>
+</li>
+<li>
+<p>Incorpora una interfaz de telemetría bastante avanzada de forma que permite comenzar a monitorizar una API si necesidad de instalar nada más de primeras.</p>
+</li>
+<li>
+<p>Permite especificar un host Elasticsearch para el almacenamiento de los datos.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Para instalarlo, ejecutaremos desde la terminal</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ nom install prom-client --save
+$ npm install swagger-stats --save</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Tras instalarlo, basta con habilitarlo en <code>src/main.ts</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">...
+import * as swStats from 'swagger-stats'; <i class="conum" data-value="1"></i><b>(1)</b>
+...
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  ...
+  app.use(swStats.getMiddleware({})); <i class="conum" data-value="2"></i><b>(2)</b>
+  ...
+}
+bootstrap();
+...</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Importar <code>swagger-stats</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Habilitar el middleware <code>swagger-stats</code> en la API</td>
+</tr>
+</table>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Configuración de <code>swagger-stats</code></div>
+<div class="paragraph">
+<p>Es posible configurar ciertos parámetros interesantes, como el nombre de la API, si se requiere autenticación y credenciales en tal caso, URL y credenciales de Elasticsearch, por citar una cuantas. Para más información, consultar la <a href="https://swaggerstats.io/guide/conf.html#options">documentación oficial</a>.</p>
+</div>
+<div class="paragraph">
+<p>A continuación se muestra un ejemplo de configuración en el archivo <code>src/main.ts</code> con parámetros de interés para autenticación y uso de Elastisearch.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">...
+  app.use(
+    swStats.getMiddleware({
+      name: 'api-catalog',
+      authentication: true, <i class="conum" data-value="1"></i><b>(1)</b>
+      onAuthenticate: function(req, username, password) { <i class="conum" data-value="2"></i><b>(2)</b>
+        // simple check for username and password
+        return username === 'admin' &amp;&amp; password === 'secret';
+      },
+      elasticsearch: 'http://myelastic.com:9200', <i class="conum" data-value="3"></i><b>(3)</b>
+      elasticsearchUsername: 'admin', <i class="conum" data-value="4"></i><b>(4)</b>
+      elasticsearchPassword: 'secret' <i class="conum" data-value="5"></i><b>(5)</b>
+    }),
+  );
+...</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Activación de la autenticación</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Función callback para realizar la autenticación. Se especifica usuario y contraseña</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>URL de Elasticsearch</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Nombre de usuario de Elasticsearch</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>Password de Elasticsearch</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>En un entorno de producción, no dejar las credenciales directamente en el código. Se recomienda usar variables de entorno o cualquier otra técnica que no exponga directamente las credenciales.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>A continuación se muestra cómo luce <code>swagger-stats</code> tras varias interacciones con la API.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/swagger-stats-summary.png" alt="swagger stats summary">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/swagger-stats-requests.png" alt="swagger stats requests">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/swagger-stats-api.png" alt="swagger stats api">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/swagger-stats-rates-and-durations.png" alt="swagger stats rates and durations">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/swagger-stats-payload.png" alt="swagger stats payload">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/swagger-stats-last-errors.png" alt="swagger stats last errors">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/swagger-stats-longest-requests.png" alt="swagger stats longest requests">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="trueapéndice-a-datos-de-ejemplo"><a class="anchor" href="#trueapéndice-a-datos-de-ejemplo"></a>Apéndice A. Datos de ejemplo</h2>
 <div class="sectionbody">
 <div class="listingblock">
@@ -5280,7 +5563,7 @@ export class RstDias {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-11-30 00:24:01 +0100
+Last updated 2021-11-30 21:17:19 +0100
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/github.min.css">
