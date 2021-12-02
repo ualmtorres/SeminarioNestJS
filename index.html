@@ -4948,7 +4948,7 @@ export class HealthController {
 <h2 id="trueactivación-de-métricas"><a class="anchor" href="#trueactivación-de-métricas"></a>14. Activación de métricas</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Las métricas ofrecen una forma de indicar diferentes medidas sobre el funcionamiento de una aplicación (p.e. memoria consumida, peticiones atendidas, cantidad de datos transferidos, &#8230;&#8203;). Estas medidas se recogen con una base temporal dando lugar a series temporales. <a href="https://prometheus.io/">Prometheus</a> es un sistema de monitorización y alertas que ampliamente extendido y que aquí usaremos para recoger y exponer las métricas de nuestra API.</p>
+<p>Las métricas ofrecen una forma de indicar diferentes medidas sobre el funcionamiento de una aplicación (p.e. memoria consumida, peticiones atendidas, cantidad de datos transferidos, &#8230;&#8203;). Estas medidas se recogen con una base temporal dando lugar a series temporales. <a href="https://prometheus.io/">Prometheus</a> es un sistema de monitorización y alertas ampliamente extendido y que aquí usaremos para recoger y exponer las métricas de nuestra API.</p>
 </div>
 <div class="paragraph">
 <p>El modo de funcionamiento suele ser el siguiente.</p>
@@ -4959,18 +4959,17 @@ export class HealthController {
 <p>La aplicación expone sus métricas en una ruta (normalmente <code>/metrics</code>).</p>
 </li>
 <li>
-<p>Añadir la aplicación como <em>target</em> de un sistema Prometheus.</p>
+<p>Añadir la aplicación como <em>target</em> en un sistema Prometheus.</p>
 </li>
 <li>
-<p>Prometheus recoge periódicamente las métricas y las almacena como una serie temporal.</p>
+<p>Prometheus recoge periódicamente las métricas y las almacena como series temporales.</p>
 </li>
 </ol>
 </div>
 <div class="sect2">
 <h3 id="truemétricas-de-forma-manual"><a class="anchor" href="#truemétricas-de-forma-manual"></a>14.1. Métricas de forma manual</h3>
 <div class="paragraph">
-<p><a href="https://github.com/siimon/prom-client"><code>prom-client</code></a> es un cliente Prometheus para NodeJS que expone las métricas de Prometheus.
-Para instalarlo, ejecutaremos desde la terminal</p>
+<p><a href="https://github.com/siimon/prom-client"><code>prom-client</code></a> es un cliente Prometheus para NodeJS que expone las métricas de Prometheus. También usaremos el paquete <code>@willsoto/nestjs-prometheus</code> para uso de Prometheus en NestJS. Para instalarlos, ejecutaremos desde la terminal</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -4978,10 +4977,10 @@ Para instalarlo, ejecutaremos desde la terminal</p>
 </div>
 </div>
 <div class="paragraph">
-<p>El ejemplo que desarrollaremos aquí será añadir una métrica denominada <code>books_served</code>. Se trata de un contador que se incrementará en uno cada vez que se llame al servicio de recuperación de todos los libros. Por tanto, cada vez que se haga una petición satisfactoria al endpoint <code>GET /books</code>, se llamará al método <code>findAll</code> del servicio <code>BooksService</code>. Dicho método será el que incremente en uno el contador <code>books_served</code> cada vez que sea ejecutado.</p>
+<p>El ejemplo que desarrollaremos aquí será añadir una métrica denominada <code>books_served</code>. Se trata de un contador que se incrementará en uno cada vez que se llame al servicio de recuperación de todos los libros. Por tanto, cada vez que se haga una petición satisfactoria al endpoint <code>GET /books</code>, éste llamará al método <code>findAll</code> del servicio <code>BooksService</code>. Dicho método será el que incremente en uno el contador <code>books_served</code> cada vez que sea ejecutado.</p>
 </div>
 <div class="paragraph">
-<p>Tras instalar <code>prom-client</code>, realizamos la configuración del cliente de Prometheus en el módulo en el que está el servicio que actualizará la métrica. En el caso del ejemplo el módulo es <code>src/books/books.module.ts</code>. En él definiremos las métricas en las que estemos interesados (p.e. <code>books_served</code>).</p>
+<p>Tras instalar <code>prom-client</code> y <code>@willsoto/nestjs-prometheus</code>, realizamos la configuración del cliente de Prometheus en el módulo en el que está el servicio que actualizará la métrica. En el caso del ejemplo el módulo es <code>src/books/books.module.ts</code>. En él definiremos las métricas en las que estemos interesados (p.e. <code>books_served</code>).</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -5084,7 +5083,7 @@ export class BooksService {
 </table>
 </div>
 <div class="paragraph">
-<p>Tras llamar al endpoint <code>GET /books</code>, en <code>/metrics</code> ya estará disponible la métrica <code>books_served</code></p>
+<p>Tras llamar al endpoint <code>GET /books</code>, en la ruta <code>/metrics</code> de la API ya estará disponible la métrica <code>books_served</code></p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -5130,7 +5129,7 @@ books_served 2 <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
 </td>
 <td class="content">
 <div class="paragraph">
-<p>Como cada métrica a usar se inyecta en el constructor del servicio, si hay servicios con varios métodos y cada uno tiene su propia métrica, habrá que inyectar todos las métricas en el constructor. En este caso, un enfoque de un servicio por endpoint y verbo genera un código más limpio ya que el constructor del servicio sólo tendría las métricas del método que implementa ese servicio.</p>
+<p>Como cada métrica a usar se inyecta en el constructor del servicio, si hay servicios con varios métodos y cada uno tiene su propia métrica, habrá que inyectar todos las métricas en el constructor. En este caso, un enfoque de un archivo de servicio por endpoint y verbo podría generar un código más limpio ya que el constructor del servicio sólo tendría las métricas del método que implementa ese servicio.</p>
 </div>
 </td>
 </tr>
@@ -5140,7 +5139,7 @@ books_served 2 <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
 <div class="sect2">
 <h3 id="truemétricas-con-swagger-stats"><a class="anchor" href="#truemétricas-con-swagger-stats"></a>14.2. Métricas con <code>swagger-stats</code></h3>
 <div class="paragraph">
-<p><code>swagger-stats</code> es un middleware para telemetría de APIs. Permite recoger métricas de los endpoints de la API en cuanto a tiempos de resolución, payloads, códigos de estado HTTP, y demás. En su funcionamiento, detecta las operaciones a través de las rutas de la API.</p>
+<p><code>swagger-stats</code> es un middleware para telemetría de APIs. Permite recoger métricas de los endpoints de la API en cuanto a tiempos de resolución, payloads, códigos de estado HTTP, y demás. En su funcionamiento, detecta las operaciones analizando las rutas de la API.</p>
 </div>
 <div class="paragraph">
 <p>Entre las caracterísitcas de <code>swagger-stats</code> cabe destacar que:</p>
@@ -5163,7 +5162,7 @@ books_served 2 <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ nom install prom-client swagger-stats --save</code></pre>
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ npm install prom-client swagger-stats --save</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -5219,7 +5218,9 @@ bootstrap();
       },
       elasticsearch: 'http://myelastic.com:9200', <i class="conum" data-value="3"></i><b>(3)</b>
       elasticsearchUsername: 'admin', <i class="conum" data-value="4"></i><b>(4)</b>
-      elasticsearchPassword: 'secret' <i class="conum" data-value="5"></i><b>(5)</b>
+      elasticsearchPassword: 'secret', <i class="conum" data-value="5"></i><b>(5)</b>
+      elasticsearchIndexPrefix: 'book-catalog-' <i class="conum" data-value="6"></i><b>(6)</b>
+
     }),
   );
 ...</code></pre>
@@ -5247,6 +5248,10 @@ bootstrap();
 <td><i class="conum" data-value="5"></i><b>5</b></td>
 <td>Password de Elasticsearch</td>
 </tr>
+<tr>
+<td><i class="conum" data-value="6"></i><b>6</b></td>
+<td>Prefijo del índice en Elasticsearch. <strong>De forma predeterminada, el prefijo que usa <code>swagger-stats</code> es <code>api</code></strong></td>
+</tr>
 </table>
 </div>
 <div class="admonitionblock tip">
@@ -5262,6 +5267,14 @@ bootstrap();
 </td>
 </tr>
 </table>
+</div>
+<div class="paragraph">
+<p>La figura siguiente ilustra cómo llegan los datos a Elasticsearch y cómo se visualizan desde Kibana.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/swagger-stats-elk.png" alt="swagger stats elk">
+</div>
 </div>
 </div>
 </div>
@@ -5700,7 +5713,7 @@ export class RstDias {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-11-30 23:24:23 +0100
+Last updated 2021-12-02 10:45:10 +0100
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/github.min.css">

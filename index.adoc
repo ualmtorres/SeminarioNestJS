@@ -2745,27 +2745,26 @@ Es posible construir indicadores de salud personalizados (p.e. https://wanago.io
 
 ## Activación de métricas
 
-Las métricas ofrecen una forma de indicar diferentes medidas sobre el funcionamiento de una aplicación (p.e. memoria consumida, peticiones atendidas, cantidad de datos transferidos, ...). Estas medidas se recogen con una base temporal dando lugar a series temporales. https://prometheus.io/[Prometheus] es un sistema de monitorización y alertas que ampliamente extendido y que aquí usaremos para recoger y exponer las métricas de nuestra API.
+Las métricas ofrecen una forma de indicar diferentes medidas sobre el funcionamiento de una aplicación (p.e. memoria consumida, peticiones atendidas, cantidad de datos transferidos, ...). Estas medidas se recogen con una base temporal dando lugar a series temporales. https://prometheus.io/[Prometheus] es un sistema de monitorización y alertas ampliamente extendido y que aquí usaremos para recoger y exponer las métricas de nuestra API.
 
 El modo de funcionamiento suele ser el siguiente. 
 
 . La aplicación expone sus métricas en una ruta (normalmente `/metrics`). 
-. Añadir la aplicación como _target_ de un sistema Prometheus.
-. Prometheus recoge periódicamente las métricas y las almacena como una serie temporal.
+. Añadir la aplicación como _target_ en un sistema Prometheus.
+. Prometheus recoge periódicamente las métricas y las almacena como series temporales.
 
 ### Métricas de forma manual
 
-https://github.com/siimon/prom-client[`prom-client`] es un cliente Prometheus para NodeJS que expone las métricas de Prometheus. 
-Para instalarlo, ejecutaremos desde la terminal
+https://github.com/siimon/prom-client[`prom-client`] es un cliente Prometheus para NodeJS que expone las métricas de Prometheus. También usaremos el paquete `@willsoto/nestjs-prometheus` para uso de Prometheus en NestJS. Para instalarlos, ejecutaremos desde la terminal
 
 [source, bash]
 ----
 $ npm install @willsoto/nestjs-prometheus prom-client --save
 ----
 
-El ejemplo que desarrollaremos aquí será añadir una métrica denominada `books_served`. Se trata de un contador que se incrementará en uno cada vez que se llame al servicio de recuperación de todos los libros. Por tanto, cada vez que se haga una petición satisfactoria al endpoint `GET /books`, se llamará al método `findAll` del servicio `BooksService`. Dicho método será el que incremente en uno el contador `books_served` cada vez que sea ejecutado.
+El ejemplo que desarrollaremos aquí será añadir una métrica denominada `books_served`. Se trata de un contador que se incrementará en uno cada vez que se llame al servicio de recuperación de todos los libros. Por tanto, cada vez que se haga una petición satisfactoria al endpoint `GET /books`, éste llamará al método `findAll` del servicio `BooksService`. Dicho método será el que incremente en uno el contador `books_served` cada vez que sea ejecutado.
 
-Tras instalar `prom-client`, realizamos la configuración del cliente de Prometheus en el módulo en el que está el servicio que actualizará la métrica. En el caso del ejemplo el módulo es `src/books/books.module.ts`. En él definiremos las métricas en las que estemos interesados (p.e. `books_served`). 
+Tras instalar `prom-client` y `@willsoto/nestjs-prometheus`, realizamos la configuración del cliente de Prometheus en el módulo en el que está el servicio que actualizará la métrica. En el caso del ejemplo el módulo es `src/books/books.module.ts`. En él definiremos las métricas en las que estemos interesados (p.e. `books_served`). 
 
 [source, ts]
 ----
@@ -2830,7 +2829,7 @@ export class BooksService {
 <3> Inyectar la métrica `books_served`
 <4> Incrementar el contador en cada ejecución del método
 
-Tras llamar al endpoint `GET /books`, en `/metrics` ya estará disponible la métrica `books_served`
+Tras llamar al endpoint `GET /books`, en la ruta `/metrics` de la API ya estará disponible la métrica `books_served`
 
 [source, bash]
 ----
@@ -2854,12 +2853,12 @@ Tras esto, un sistema Prometheus podría añadir esta API como _target_ y almace
 
 [TIP]
 ====
-Como cada métrica a usar se inyecta en el constructor del servicio, si hay servicios con varios métodos y cada uno tiene su propia métrica, habrá que inyectar todos las métricas en el constructor. En este caso, un enfoque de un servicio por endpoint y verbo genera un código más limpio ya que el constructor del servicio sólo tendría las métricas del método que implementa ese servicio.
+Como cada métrica a usar se inyecta en el constructor del servicio, si hay servicios con varios métodos y cada uno tiene su propia métrica, habrá que inyectar todos las métricas en el constructor. En este caso, un enfoque de un archivo de servicio por endpoint y verbo podría generar un código más limpio ya que el constructor del servicio sólo tendría las métricas del método que implementa ese servicio.
 ====
 
 ### Métricas con `swagger-stats`
 
-`swagger-stats` es un middleware para telemetría de APIs. Permite recoger métricas de los endpoints de la API en cuanto a tiempos de resolución, payloads, códigos de estado HTTP, y demás. En su funcionamiento, detecta las operaciones a través de las rutas de la API. 
+`swagger-stats` es un middleware para telemetría de APIs. Permite recoger métricas de los endpoints de la API en cuanto a tiempos de resolución, payloads, códigos de estado HTTP, y demás. En su funcionamiento, detecta las operaciones analizando las rutas de la API. 
 
 Entre las caracterísitcas de `swagger-stats` cabe destacar que:
 
@@ -2871,7 +2870,7 @@ Para instalarlo, ejecutaremos desde la terminal
 
 [source, bash]
 ----
-$ nom install prom-client swagger-stats --save
+$ npm install prom-client swagger-stats --save
 ----
 
 Tras instalarlo, basta con habilitarlo en `src/main.ts`
@@ -2913,7 +2912,9 @@ A continuación se muestra un ejemplo de configuración en el archivo `src/main.
       },
       elasticsearch: 'http://myelastic.com:9200', <3>
       elasticsearchUsername: 'admin', <4>
-      elasticsearchPassword: 'secret' <5>
+      elasticsearchPassword: 'secret', <5>
+      elasticsearchIndexPrefix: 'book-catalog-' <6>
+
     }),
   );
 ...
@@ -2923,11 +2924,17 @@ A continuación se muestra un ejemplo de configuración en el archivo `src/main.
 <3> URL de Elasticsearch
 <4> Nombre de usuario de Elasticsearch
 <5> Password de Elasticsearch
+<6> Prefijo del índice en Elasticsearch. *De forma predeterminada, el prefijo que usa `swagger-stats` es `api`*
 
 [TIP]
 ====
 En un entorno de producción, no conviene dejar las credenciales directamente en el código. Se recomienda usar variables de entorno o cualquier otra técnica que no exponga directamente las credenciales.
 ====
+
+La figura siguiente ilustra cómo llegan los datos a Elasticsearch y cómo se visualizan desde Kibana.
+
+image::swagger-stats-elk.png[]
+
 ****
 
 A continuación se muestra cómo luce `swagger-stats` tras varias interacciones con la API. La pantalla `Summary` muestra un resumen del tráfico, contadores de errores y peticiones, carga de CPU y RAM.
